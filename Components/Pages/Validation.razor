@@ -1,0 +1,134 @@
+﻿@page "/Validation"
+
+@using AccreditValidation.Resources.Constants
+@using Components
+@using AccreditValidation.Components.Pages.Xaml;
+
+<AuthWrapper>
+    <div class="settings-container @AppState.CustomBackgroundClass" id="validation_holder_container" @ref="validation_holder_container">
+
+        <!-- Area label + filter toggle button on same line -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin: 0;
+                visibility:@(ShowFilter ? "visible" : "hidden"); white-space: nowrap;">
+                @LocalizationService["Area"]
+            </h2>
+
+            <!-- Filter toggle button fixed right -->
+            <button @onclick="ToggleFilter"
+                    id="filter_toggle_button"
+                    style="padding: 10px; background-color: transparent; color: #2563eb; border: none; border-radius: 8px; cursor: pointer;"
+                    onmouseover="this.style.backgroundColor='#e0f0ff'"
+                    onmouseout="this.style.backgroundColor='transparent'"
+                    title="@LocalizationService["Filter"]"
+                    aria-label="@LocalizationService["Filter"]">
+                @if (ShowFilter)
+                {
+                    <i class="bi bi-arrows-collapse" style="font-size: 1.25rem;"></i>
+                }
+                else
+                {
+                    <i class="bi bi-arrows-expand" style="font-size: 1.25rem;"></i>
+                }
+            </button>
+        </div>
+
+        <!-- Filter section toggled -->
+        <div id="filter_holder_div" style="display:@(ShowFilter ? "block" : "none")">
+            <!-- Area dropdown -->
+            <select class="validation-picker" @onchange="OnAreaChanged"
+                    disabled="@(AreaList == null || AreaList.Count == 0)"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 1rem;">
+                @if (AreaList == null || AreaList.Count == 0)
+                {
+                    <option disabled selected>@LocalizationService["NoAreasAvailable"]</option>
+                }
+                else
+                {
+                    @foreach (var area in AreaList)
+                    {
+                        <option value="@area.Identifier"
+                                selected="@(AppState.SelectedAreaIdentifier == area.Identifier ? "selected" : null)">
+                            @area.Name
+                        </option>
+                    }
+                }
+            </select>
+
+            <!-- Direction heading -->
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-top: 0; margin-bottom: 0.5rem;">
+                @LocalizationService["Direction"]
+            </h2>
+
+            <!-- Full-width direction dropdown without side-by-side icon -->
+            <select class="validation-picker" @onchange="OnSelectedDirectionChanged"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 1rem;">
+                @foreach (var direction in DirectionList)
+                {
+                    <option value="@direction.Identifier"
+                            selected="@(AppState.SelectedDirectionIdentifier == direction.Identifier ? "selected" : null)">
+                        @direction.Direction
+                    </option>
+                }
+            </select>
+
+            @if (UseManualInput)
+            {
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <input class="manual-input"
+                           type="number"
+                           style="flex: 1; border: 1px solid #d1d5db; border-radius: 4px; padding: 0.5rem; height: 44px;"
+                           @bind="BarcodeData"
+                           placeholder="@LocalizationService["Barcode"]" />
+                    <button @onclick="Validate"
+                            class="btn btn-outline-primary"
+                            style="display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; height: 44px;">
+                        <i class="bi bi-search" style="font-size: 1.25rem;"></i>
+                    </button>
+                    <button @onclick="Clear"
+                            class="btn btn-outline-secondary"
+                            style="display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; height: 44px;">
+                        <i class="bi bi-x-circle" style="font-size: 1.25rem;"></i>
+                    </button>
+                </div>
+            }
+
+            @if (UseDeviceCameraView)
+            {
+                <button class="btn btn-outline-primary w-100" @onclick="OpenNativeCameraPage" type="submit">@LocalizationService["Scan"]</button>
+            }
+
+        </div>
+
+
+        <!-- Result Display -->
+        @if (ShowResult)
+        {
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; position: relative;" id="validation_result_holder">
+                <div id="validation_image_div" style="display:@(ShowValidationImageDiv ? "block" : "none")">
+                    <img src="@PhotoUrl" width="100" style="border-radius: 8px;" id="validation_photo_holder" />
+
+                    @if (AppState.CustomBackgroundClass == ConstantsName.BGCustomDanger)
+                    {
+                        <div id="validation_result_denied">@LocalizationService["Denied"]</div>
+                        <span style="position: absolute; top: -10px; right: -10px; color: red; font-size: 1.5rem;">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </span>
+                    }
+                    else if (AppState.CustomBackgroundClass == ConstantsName.BGCustomSuccess)
+                    {
+                        <span style="position: absolute; top: -10px; right: -10px; color: green; font-size: 1.5rem;">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </span>
+                    }
+                </div>
+
+                <p style="font-weight: 600; margin-top: 0.5rem;">@OrganisationName</p>
+                <p>@SubTypeName</p>
+                <p>@Name</p>
+                <p>@Direction</p>
+            </div>
+        }
+
+    </div>
+</AuthWrapper>

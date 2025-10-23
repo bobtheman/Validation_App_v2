@@ -1,0 +1,13 @@
+﻿@inherits LayoutComponentBase
+
+<div class="login-layout">
+    <main style="margin: 0; padding: 0;">
+        @Body
+    </main>
+    @if (AppState.ShowSpinner)
+    {
+        <div class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+    }
+</div>

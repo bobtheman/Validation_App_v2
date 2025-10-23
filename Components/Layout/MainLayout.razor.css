@@ -1,0 +1,79 @@
+.page {
+    padding: 0;
+    margin: 0;
+}
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.6); /* Optional semi-transparent background */
+    z-index: 9998;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba(0, 123, 255, 0.2);
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 0.8s ease-in-out infinite;
+    z-index: 9999;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.bg-custom-danger {
+    background-color: #F8D7DA;
+}
+
+.bg-custom-success {
+    background-color: #D4EDDA;
+}
+
+.bg-custom-clear {
+    background-color: #ffffff;
+}
+
+@media (max-width: 640.98px) {
+
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+}
+
+.header {
+    background-color: #407cc9;
+    height: 50px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-content {
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,546 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccreditValidation" xml:space="preserve">
+    <value>Accredit Validation</value>
+  </data>
+  <data name="AllResults" xml:space="preserve">
+    <value>Alle Ergebnisse</value>
+  </data>
+  <data name="AnErrorOccured" xml:space="preserve">
+    <value>Es ist ein Fehler aufgetreten</value>
+  </data>
+  <data name="Appearance" xml:space="preserve">
+    <value>Aussehen</value>
+  </data>
+  <data name="AppInfo" xml:space="preserve">
+    <value>App-Info</value>
+  </data>
+  <data name="Application" xml:space="preserve">
+    <value>Anwendung</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>App-Version</value>
+  </data>
+  <data name="Area" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="AreaNotFound" xml:space="preserve">
+    <value>Bereich nicht gefunden</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Bist du sicher?</value>
+  </data>
+  <data name="BadgeNotFound" xml:space="preserve">
+    <value>Abzeichen nicht gefunden</value>
+  </data>
+  <data name="Barcode" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Stornieren</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Klar</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="ConfirmDeleteDatabaseMessage" xml:space="preserve">
+    <value>Offline-Datenbank löschen</value>
+  </data>
+  <data name="ConfirmDeleteDatabaseTitle" xml:space="preserve">
+    <value>Datenbank löschen</value>
+  </data>
+  <data name="ConfirmDeleteScanMessage" xml:space="preserve">
+    <value>Alle gescannten Daten löschen?</value>
+  </data>
+  <data name="ConfirmDeleteScanTitle" xml:space="preserve">
+    <value>Scan löschen</value>
+  </data>
+  <data name="ConfirmDownloadDataMessage" xml:space="preserve">
+    <value>Alle Daten inkl. Fotos herunterladen?</value>
+  </data>
+  <data name="ConfirmDownloadDataMessageWithoutPhotos" xml:space="preserve">
+    <value>Alle Daten außer Fotos herunterladen?</value>
+  </data>
+  <data name="ConfirmLogout" xml:space="preserve">
+    <value>Abmelden bestätigen</value>
+  </data>
+  <data name="ConfirmLogoutMessage" xml:space="preserve">
+    <value>Möchten Sie sich wirklich abmelden?</value>
+  </data>
+  <data name="ConfirmPrompt" xml:space="preserve">
+    <value>Bestätigungsaufforderung</value>
+  </data>
+  <data name="CurrentlyOffline" xml:space="preserve">
+    <value>Momentan offline</value>
+  </data>
+  <data name="DarkModeError" xml:space="preserve">
+    <value>Beim Umschalten des Dunkelmodus ist ein Fehler aufgetreten</value>
+  </data>
+  <data name="DatabaseDeleted" xml:space="preserve">
+    <value>Datenbank gelöscht</value>
+  </data>
+  <data name="DatabaseDeletedError" xml:space="preserve">
+    <value>Offlinedatenbank kann nicht gelöscht werden</value>
+  </data>
+  <data name="DataSync" xml:space="preserve">
+    <value>Datensynchronisierung</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DeleteAll" xml:space="preserve">
+    <value>Alle löschen</value>
+  </data>
+  <data name="DeleteAllScanResults" xml:space="preserve">
+    <value>Alle Offline-Scanergebnisse löschen</value>
+  </data>
+  <data name="DeleteAllScanResultsDeleted" xml:space="preserve">
+    <value>Alle Offline-Scan-Ergebnisse gelöscht</value>
+  </data>
+  <data name="DeleteAllScanResultsFailed" xml:space="preserve">
+    <value>Fehler beim Löschen der Offline-Scan-Ergebnisse</value>
+  </data>
+  <data name="DeleteDatabase" xml:space="preserve">
+    <value>Datenbank löschen</value>
+  </data>
+  <data name="DeleteScan" xml:space="preserve">
+    <value>Scan löschen?</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>BESTRITTEN</value>
+  </data>
+  <data name="Direction" xml:space="preserve">
+    <value>Richtung</value>
+  </data>
+  <data name="DownloadData" xml:space="preserve">
+    <value>Daten herunterladen</value>
+  </data>
+  <data name="DownloadDataFailed" xml:space="preserve">
+    <value>Datendownload fehlgeschlagen</value>
+  </data>
+  <data name="DownloadDataSuccessed" xml:space="preserve">
+    <value>Daten herunterladen erfolgreich</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>Englisch</value>
+  </data>
+  <data name="EnterPasswordMessage" xml:space="preserve">
+    <value>Geben Sie das Passwort ein</value>
+  </data>
+  <data name="EnterPasswordTitle" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="Feedback" xml:space="preserve">
+    <value>Feedback und Vorschläge</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="FilterByBarcode" xml:space="preserve">
+    <value>Nach Barcode filtern</value>
+  </data>
+  <data name="FingerprintErrorUnknown" xml:space="preserve">
+    <value>Fingerabdruckfehler unbekannt</value>
+  </data>
+  <data name="Forename" xml:space="preserve">
+    <value>Vorname</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Passwort vergessen</value>
+  </data>
+  <data name="German" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="HideDetails" xml:space="preserve">
+    <value>Details ausblenden</value>
+  </data>
+  <data name="HideManualInput" xml:space="preserve">
+    <value>Manuelle Eingabe ausblenden</value>
+  </data>
+  <data name="HomePage" xml:space="preserve">
+    <value>Startseite</value>
+  </data>
+  <data name="In" xml:space="preserve">
+    <value>In</value>
+  </data>
+  <data name="InputOptions" xml:space="preserve">
+    <value>Eingabeoptionen</value>
+  </data>
+  <data name="InvalidArea" xml:space="preserve">
+    <value>Ungültiger Bereich</value>
+  </data>
+  <data name="InvalidBarcode" xml:space="preserve">
+    <value>Ungültiger Barcode</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Ungültige Richtung</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="LastOfflineSync" xml:space="preserve">
+    <value>Letzte Offline-Synchronisierung</value>
+  </data>
+  <data name="LastSync" xml:space="preserve">
+    <value>Letzte Offline-Synchronisierung</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Wird geladen</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Anmeldung</value>
+  </data>
+  <data name="LoginFailed" xml:space="preserve">
+    <value>Fehler bei der Anmeldung</value>
+  </data>
+  <data name="LoginFailedMessage" xml:space="preserve">
+    <value>Benutzername oder Passwort ist ungültig</value>
+  </data>
+  <data name="LoginFailedRetry" xml:space="preserve">
+    <value>Versuchen Sie es erneut</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Ausloggen</value>
+  </data>
+  <data name="LogoutMessage" xml:space="preserve">
+    <value>Sie werden abgemeldet</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NetworkConnectionRequired" xml:space="preserve">
+    <value>Netzwerkverbindung erforderlich</value>
+  </data>
+  <data name="NetworkError" xml:space="preserve">
+    <value>Network Error</value>
+  </data>
+  <data name="NetworkErrorMessage" xml:space="preserve">
+    <value>Die Verbindung zum Server kann nicht hergestellt werden</value>
+  </data>
+  <data name="NetworkStatus" xml:space="preserve">
+    <value>Netzwerkstatus</value>
+  </data>
+  <data name="NetworkStatusConnected" xml:space="preserve">
+    <value>Verbunden</value>
+  </data>
+  <data name="NetworkStatusDisconnected" xml:space="preserve">
+    <value>Getrennt</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>NEIN</value>
+  </data>
+  <data name="NoAreasAvailable" xml:space="preserve">
+    <value>Keine Bereiche verfügbar</value>
+  </data>
+  <data name="NoBarcodeDetected" xml:space="preserve">
+    <value>Es wurde kein Barcode erkannt. Bitte versuchen Sie es erneut.</value>
+  </data>
+  <data name="NoOfflineDataAvailable" xml:space="preserve">
+    <value>Keine Offline-Daten verfügbar</value>
+  </data>
+  <data name="NoOfflineRecords" xml:space="preserve">
+    <value>Keine Offline-Datensätze</value>
+  </data>
+  <data name="NoOfflineScanRecords" xml:space="preserve">
+    <value>Keine Offline-Scan-Datensätze</value>
+  </data>
+  <data name="OFF" xml:space="preserve">
+    <value>AUS</value>
+  </data>
+  <data name="OfflineMode" xml:space="preserve">
+    <value>Offline-Modus</value>
+  </data>
+  <data name="OfflineModeActivated" xml:space="preserve">
+    <value>Offline-Modus aktiviert</value>
+  </data>
+  <data name="OfflineScanError" xml:space="preserve">
+    <value>Fehler beim Offline-Scan</value>
+  </data>
+  <data name="OfflineScanResultsTitle" xml:space="preserve">
+    <value>Ergebnisse des Offline-Scans</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ON" xml:space="preserve">
+    <value>AN</value>
+  </data>
+  <data name="OnlineMode" xml:space="preserve">
+    <value>Online-Modus</value>
+  </data>
+  <data name="OnlineModeActivated" xml:space="preserve">
+    <value>Online-Modus aktiviert</value>
+  </data>
+  <data name="Organisation" xml:space="preserve">
+    <value>Organisation</value>
+  </data>
+  <data name="OrganisationName" xml:space="preserve">
+    <value>Name der Organisation</value>
+  </data>
+  <data name="Out" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Passwort wird benötigt</value>
+  </data>
+  <data name="PleaseEnteraValidArea" xml:space="preserve">
+    <value>Bitte geben Sie einen gültigen Bereich ein</value>
+  </data>
+  <data name="PleaseEnteravalidBarcode" xml:space="preserve">
+    <value>Bitte geben Sie einen gültigen Barcode ein</value>
+  </data>
+  <data name="PleaseEnteraValidDirection" xml:space="preserve">
+    <value>Bitte geben Sie eine gültige Richtung ein</value>
+  </data>
+  <data name="PleaseTryAgain" xml:space="preserve">
+    <value>Bitte versuche es erneut</value>
+  </data>
+  <data name="RegistrationNotApproved" xml:space="preserve">
+    <value>Registrierung nicht genehmigt</value>
+  </data>
+  <data name="RegistrationNotFoundAtEvent" xml:space="preserve">
+    <value>Anmeldung bei Veranstaltung nicht gefunden</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Erinnere dich an mich</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Zurücksetzen</value>
+  </data>
+  <data name="ResetApplication" xml:space="preserve">
+    <value>Anwendung zurücksetzen</value>
+  </data>
+  <data name="ResetMessage" xml:space="preserve">
+    <value>Sie werden abgemeldet und alle Einstellungen werden entfernt</value>
+  </data>
+  <data name="Scan" xml:space="preserve">
+    <value>Scan</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Sicherheit</value>
+  </data>
+  <data name="SelectArea" xml:space="preserve">
+    <value>Wählen Sie Bereich aus</value>
+  </data>
+  <data name="Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="ShowDetails" xml:space="preserve">
+    <value>Zeige Details</value>
+  </data>
+  <data name="ShowManualInput" xml:space="preserve">
+    <value>Manuelle Eingabe anzeigen</value>
+  </data>
+  <data name="SiteName" xml:space="preserve">
+    <value>Site-Name</value>
+  </data>
+  <data name="SiteNameRequired" xml:space="preserve">
+    <value>Site-Name Erforderlich</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Einreichen</value>
+  </data>
+  <data name="SubTypeName" xml:space="preserve">
+    <value>Name des Untertyps</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="Surname" xml:space="preserve">
+    <value>Nachname</value>
+  </data>
+  <data name="SyncData" xml:space="preserve">
+    <value>Daten synchronisieren</value>
+  </data>
+  <data name="SyncDataFailed" xml:space="preserve">
+    <value>Datensynchronisierung fehlgeschlagen</value>
+  </data>
+  <data name="SyncDataSuccess" xml:space="preserve">
+    <value>Daten erfolgreich synchronisieren</value>
+  </data>
+  <data name="SyncMessage" xml:space="preserve">
+    <value>Um offline zu arbeiten, laden Sie bitte die Daten herunter, um fortzufahren</value>
+  </data>
+  <data name="TotalOffline" xml:space="preserve">
+    <value>Gesamtzahl der Offline-Datensätze</value>
+  </data>
+  <data name="TotalOfflineRecords" xml:space="preserve">
+    <value>Gesamte Offline-Datensätze</value>
+  </data>
+  <data name="TotalScans" xml:space="preserve">
+    <value>Gesamtzahl der Scans</value>
+  </data>
+  <data name="TotalSynced" xml:space="preserve">
+    <value>Total synchronisiert</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="UseDarkMode" xml:space="preserve">
+    <value>Dunkler Modus</value>
+  </data>
+  <data name="UseFingerprint" xml:space="preserve">
+    <value>Anmeldung per Fingerabdruck</value>
+  </data>
+  <data name="UseFingerprintMessage" xml:space="preserve">
+    <value>Verwenden Sie Ihren Fingerabdruck, um fortzufahren</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Nutzername</value>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Benutzername wird benötigt</value>
+  </data>
+  <data name="Validation" xml:space="preserve">
+    <value>Validierung</value>
+  </data>
+  <data name="ValidationResult" xml:space="preserve">
+    <value>Validierungsergebnis</value>
+  </data>
+  <data name="ValidPasswordRequired" xml:space="preserve">
+    <value>Gültiges Passwort erforderlich</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Stellen Sie sicher, dass Sie es sind</value>
+  </data>
+  <data name="ViewOfflineScans" xml:space="preserve">
+    <value>Offline-Scans anzeigen</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+</root>

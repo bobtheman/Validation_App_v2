@@ -1,0 +1,74 @@
+﻿/* ====== Card Layout ====== */
+.card {
+    width: 100%;
+    max-width: 400px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
+}
+
+/* Info row inside the card */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 16px;
+    color: #333333;
+}
+
+/* ====== Button Styles ====== */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* ====== Network status dot and text ====== */
+.network-status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-online {
+    background-color: #22c55e; /* green */
+}
+
+.status-offline {
+    background-color: #ef4444; /* red */
+}
+
+.status-label {
+    font-weight: 500;
+}
+
+.label-online {
+    color: #15803d; /* dark green */
+}
+
+.label-offline {
+    color: #b91c1c; /* dark red */
+}
+
+.bg-custom-danger {
+    background-color: #F8D7DA;
+}
+
+.bg-custom-success {
+    background-color: #D4EDDA;
+}
+
+.bg-white {
+    background-color: #ffffff;
+}

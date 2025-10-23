@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+
+    <key>UIDeviceFamily</key>
+    <array>
+      <integer>1</integer>
+      <!-- iPhone -->
+      <integer>2</integer>
+      <!-- iPad -->
+    </array>
+
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+      <string>arm64</string>
+    </array>
+
+    <!-- App Icon setup via Assets.xcassets -->
+    <key>CFBundleIcons</key>
+    <dict>
+      <key>CFBundlePrimaryIcon</key>
+      <dict>
+        <key>CFBundleIconFiles</key>
+        <array>
+          <string>AppIcon</string>
+        </array>
+      </dict>
+    </dict>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.accreditsolutions.accreditvalidation</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>AccreditValidation</string>
+
+    <!-- Camera & Photos Permissions -->
+    <key>NSCameraUsageDescription</key>
+    <string>We need to use your camera to take pictures.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need to save photos to your photo library.</string>
+
+    <!-- FaceID Permission -->
+    <key>NSFaceIDUsageDescription</key>
+    <string>We use Face ID to log you in securely.</string>
+
+    <!-- Orientation Support -->
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    </array>
+
+    <key>UIStatusBarHidden</key>
+    <true/>
+
+    <key>UIRequiresFullScreen</key>
+    <true/>
+  </dict>
+</plist>

@@ -1,0 +1,24 @@
+﻿@using Components
+
+<AuthWrapper>
+    <footer class="bottom-tab-menu">
+        <NavLink class="tab-item" href="Validation">
+            <div class="tab-icon-wrapper">
+                <i class="bi bi-upc-scan tab-icon" aria-hidden="true"></i>
+            </div>
+            <span>@LocalizationService["Validation"]</span>
+        </NavLink>
+        <NavLink class="tab-item" href="Data">
+            <div class="tab-icon-wrapper">
+                <i class="bi bi-database-fill tab-icon" aria-hidden="true"></i>
+            </div>
+            <span>@LocalizationService["DataSync"]</span>
+        </NavLink>
+        <NavLink class="tab-item" href="Settings">
+            <div class="tab-icon-wrapper">
+                <i class="bi bi-gear tab-icon" aria-hidden="true"></i>
+            </div>
+            <span>@LocalizationService["Settings"]</span>
+        </NavLink>
+    </footer>
+</AuthWrapper>

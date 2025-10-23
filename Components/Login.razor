@@ -1,0 +1,53 @@
+﻿@page "/"
+@layout LoginLayout
+
+@using Microsoft.AspNetCore.Components.Forms
+@using AccreditValidation.Models.Authentication
+
+<div id="login_form_container">
+    <EditForm Model="@userLoginModel" OnValidSubmit="HandleLoginAsync">
+        <div class="full-height-container">
+            <div id="login_logo_holder" class="text-center mb-4" @onclick="ToggleSiteNameVisibility" style="cursor: pointer;">
+                <img src="Images/logo.png" alt="App Logo" id="login-image-logo" />
+            </div>
+
+            <div id="login_sitename_holder" class="mb-3" style="display: @(isSiteNameVisible ? "block" : "none")">
+                <label class="form-label">@LocalizationService["SiteName"]</label>
+                <InputText class="form-control" @bind-Value="userLoginModel.SiteName" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">@LocalizationService["Username"]</label>
+                <InputText class="form-control" @bind-Value="userLoginModel.Username" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">@LocalizationService["Password"]</label>
+                <InputText class="form-control" type="password" @bind-Value="userLoginModel.Password" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">@LocalizationService["Language"]</label>
+                <select class="language-picker" @onchange="OnLanguageChanged">
+                    @foreach (var language in LanguageList)
+                    {
+                        <option value="@language.LanguageCode"> @LanguageStateService.GetFlagEmoji(language.LanguageCode) @language.LanguageName</option>
+                    }
+                </select>
+            </div>
+
+            <div id="login_options_holder">
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="userLoginModel.RememberMe" />
+                    <label class="form-check-label">@LocalizationService["RememberMe"]</label>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <a href="#" class="small text-decoration-none">@LocalizationService["ForgotPassword"]</a>
+                </div>
+            </div>
+
+            <button class="btn btn-outline-primary w-100" type="submit">@LocalizationService["Login"]</button>
+        </div>
+    </EditForm>
+</div>

@@ -1,0 +1,79 @@
+﻿@inherits LayoutComponentBase
+
+<AuthWrapper>
+    <div class="page @AppState.CustomBackgroundClass">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+        <header class="header">
+            <div class="header-content">
+                @AppState.SelectedPage
+            </div>
+        </header>
+        <main class="main" style="margin: 0; padding: 0;">
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+
+        @if (AppState.ShowSpinner)
+        {
+            <div class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+        }
+
+        <!-- Alert toast -->
+        @if (!string.IsNullOrEmpty(AlertService.AlertMessage))
+        {
+            <div class="alert @AlertService.AlertType" role="alert"
+                 style="position: fixed; bottom: 1rem; right: 1rem; z-index: 1050; min-width: 300px;">
+                @AlertService.AlertMessage
+            </div>
+        }
+
+        <!-- Confirm dialog -->
+        @if (IsConfirmVisible)
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@ConfirmTitle</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>@ConfirmMessage</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="ConfirmOkClicked">@OkText</button>
+                            <button class="btn btn-secondary" @onclick="ConfirmCancelClicked">@CancelText</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Modal -->
+        @if (IsShowModalVisible)
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@ModalTitle</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>@ModalMessage</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="ModalOkClicked">@OkText</button>
+                            <button class="btn btn-secondary" @onclick="ModalCancelClicked">@CancelText</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</AuthWrapper>
