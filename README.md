@@ -63,7 +63,7 @@ The bottom navigation is styled in `site.css`:
 
 ## 🛠️ Dependencies
 
-- [.NET 8](https://dotnet.microsoft.com/)
+- [.NET 9](https://dotnet.microsoft.com/)
 - [Blazor WebAssembly](https://learn.microsoft.com/aspnet/core/blazor/)
 - [Bootstrap Icons](https://icons.getbootstrap.com/)
 
