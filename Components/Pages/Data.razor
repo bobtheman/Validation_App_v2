@@ -3,7 +3,7 @@
 @using Components
 
 <AuthWrapper>
-    <div class="settings-container max-w-3xl mx-auto p-6 space-y-8 bg-white rounded-2xl">
+    <div class="settings-container @AppState.CustomBackgroundClass" id="data_holder_container" @ref="data_holder_container">
 
         <div class="card shadow-sm rounded-3 p-4 mb-4 border-0 bg-light">
             <div class="info-row d-flex justify-content-between">
@@ -216,6 +216,6 @@
             </div>
         }
 
-
+        <div class="clearfix10"></div>
     </div>
 </AuthWrapper>

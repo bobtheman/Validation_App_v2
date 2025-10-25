@@ -38,7 +38,7 @@ namespace AccreditValidation.Components.Pages
         private List<OfflineScanData> OfflineScanRecords = new();
         private string barcodeFilter = string.Empty;
         private string resultFilter = "All";
-
+        private ElementReference data_holder_container;
         private IEnumerable<OfflineScanData> FilteredRecords => OfflineScanRecords.Where(record =>
             (string.IsNullOrWhiteSpace(barcodeFilter) || record.Barcode.Contains(barcodeFilter, StringComparison.OrdinalIgnoreCase)) &&
             (resultFilter == "All" ||

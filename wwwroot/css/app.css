@@ -225,3 +225,8 @@ h1:focus {
         transform: translateY(0);
     }
 }
+
+.clearfix10 {
+    height:10px;
+    width:100%;
+}

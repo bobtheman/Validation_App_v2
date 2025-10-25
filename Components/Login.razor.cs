@@ -79,7 +79,7 @@ namespace AccreditValidation.Components
                 if (userLoginModel.SiteName == "QASTAGINGV5-UAT")
                 {
                     //userLoginModel.ServerUrl = ($"https://qastagingv5-api-uat.accredit-solutions.com");
-                    userLoginModel.ServerUrl = "http://localhost:9288";
+                    userLoginModel.ServerUrl = "http://a0rvkddbgn.loclx.io";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);
