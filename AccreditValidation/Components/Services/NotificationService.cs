@@ -16,7 +16,11 @@
         private const string ChannelId = "default_channel";
         private const string ChannelName = "Default Notifications";
         private readonly ObservableCollection<InAppNotificationService> _inAppNotifications = new();
-        public event EventHandler<InAppNotificationService> OnNotificationReceived;
+        private SignalRNotificationHubService? _signalRHub;
+
+        public event EventHandler<InAppNotificationService>? OnNotificationReceived;
+
+        public bool IsSignalRConnected => _signalRHub?.IsConnected ?? false;
 
         public async Task<bool> RequestPermissionAsync()
         {
@@ -56,10 +60,7 @@
                 .SetAutoCancel(true);
 
             var notificationManager = NotificationManagerCompat.From(context);
-            if (notificationManager != null)
-            {
-                notificationManager.Notify(id, builder.Build());
-            }
+            notificationManager?.Notify(id, builder.Build());
 
             return Task.CompletedTask;
         }
@@ -73,10 +74,8 @@
             }
 
             var notificationManager = NotificationManagerCompat.From(context);
-            if (notificationManager != null)
-            {
-                notificationManager.Cancel(id);
-            }
+            notificationManager?.Cancel(id);
+
             return Task.CompletedTask;
         }
 
@@ -89,10 +88,8 @@
             }
 
             var notificationManager = NotificationManagerCompat.From(context);
-            if (notificationManager != null)
-            {
-                notificationManager.CancelAll();
-            }
+            notificationManager?.CancelAll();
+
             return Task.CompletedTask;
         }
 
@@ -124,7 +121,6 @@
             if (notification != null)
             {
                 notification.IsRead = true;
-                // Force collection change notification
                 var index = _inAppNotifications.IndexOf(notification);
                 _inAppNotifications.RemoveAt(index);
                 _inAppNotifications.Insert(index, notification);
@@ -141,6 +137,37 @@
         public int GetUnreadCount()
         {
             return _inAppNotifications.Count(n => !n.IsRead);
+        }
+
+        // SignalR implementation
+        public async Task InitializeSignalRAsync(string hubUrl)
+        {
+            if (_signalRHub != null)
+            {
+                await _signalRHub.DisposeAsync();
+            }
+
+            _signalRHub = new SignalRNotificationHubService(hubUrl);
+
+            // Subscribe to SignalR notifications
+            _signalRHub.OnNotificationReceived += async (sender, notification) =>
+            {
+                // Show in-app notification
+                await ShowInAppNotificationAsync(notification.Title, notification.Message, notification.Type);
+
+                // Optionally show system notification
+                await ShowNotificationAsync(notification.Title, notification.Message);
+            };
+
+            await _signalRHub.InitializeAsync();
+        }
+
+        public async Task DisconnectSignalRAsync()
+        {
+            if (_signalRHub != null)
+            {
+                await _signalRHub.StopAsync();
+            }
         }
 
         private void CreateNotificationChannel(Context context)
@@ -169,7 +196,7 @@
     public class NotificationService : INotificationService
     {
         private readonly ObservableCollection<InAppNotificationService> _inAppNotifications = new();
-        public event EventHandler<InAppNotificationService> OnNotificationReceived;
+        public event EventHandler<InAppNotificationService>? OnNotificationReceived;
 
         public async Task<bool> RequestPermissionAsync()
         {
@@ -259,6 +286,21 @@
         {
             return _inAppNotifications.Count(n => !n.IsRead);
         }
+
+        // Add missing members to fix CS0535 for iOS platform
+        public Task InitializeSignalRAsync(string hubUrl)
+        {
+            // SignalR not supported on this platform
+            return Task.CompletedTask;
+        }
+
+        public Task DisconnectSignalRAsync()
+        {
+            // SignalR not supported on this platform
+            return Task.CompletedTask;
+        }
+
+        public bool IsSignalRConnected => false;
     }
 #elif WINDOWS
     using Microsoft.Windows.AppNotifications;
@@ -267,7 +309,7 @@
     public class NotificationService : INotificationService
     {
         private readonly ObservableCollection<InAppNotificationService> _inAppNotifications = new();
-        public event EventHandler<InAppNotificationService> OnNotificationReceived;
+        public event EventHandler<InAppNotificationService>? OnNotificationReceived;
 
         public Task<bool> RequestPermissionAsync()
         {
@@ -340,6 +382,21 @@
         {
             return _inAppNotifications.Count(n => !n.IsRead);
         }
+
+        // Add missing members to fix CS0535 for Windows platform
+        public Task InitializeSignalRAsync(string hubUrl)
+        {
+            // SignalR not supported on this platform
+            return Task.CompletedTask;
+        }
+
+        public Task DisconnectSignalRAsync()
+        {
+            // SignalR not supported on this platform
+            return Task.CompletedTask;
+        }
+
+        public bool IsSignalRConnected => false;
     }
 #endif
 }

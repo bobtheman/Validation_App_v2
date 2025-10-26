@@ -75,10 +75,16 @@
 
     <ItemGroup>
       <Compile Remove="Components\Pages\Xaml\NotificationBell.xaml.cs" />
+      <Compile Remove="Components\Pages\Xaml\NotificationPanel.xaml.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="appsettings.json" />
     </ItemGroup>
 
     <ItemGroup>
       <MauiXaml Remove="Components\Pages\Xaml\NotificationBell.xaml" />
+      <MauiXaml Remove="Components\Pages\Xaml\NotificationPanel.xaml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -88,9 +94,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="appsettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
         <PackageReference Include="CommunityToolkit.Maui.Core" Version="11.2.0" />
         <PackageReference Include="Honeywell.BarcodeReader" Version="1.32.7.10" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.10" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
@@ -142,9 +153,6 @@
 
     <ItemGroup>
       <MauiXaml Update="Components\Pages\Xaml\DeviceCamera.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </MauiXaml>
-      <MauiXaml Update="Components\Pages\Xaml\NotificationPanel.xaml">
         <Generator>MSBuild:Compile</Generator>
       </MauiXaml>
       <MauiXaml Update="Platforms\Android\Resources\styles.xaml">

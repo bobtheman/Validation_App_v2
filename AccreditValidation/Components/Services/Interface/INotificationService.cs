@@ -9,12 +9,17 @@ namespace AccreditValidation.Components.Services.Interface
         Task CancelNotificationAsync(int id);
         Task CancelAllNotificationsAsync();
 
-        // New methods for in-app notifications
+        // In-app notifications
         event EventHandler<InAppNotificationService> OnNotificationReceived;
         Task ShowInAppNotificationAsync(string title, string message, NotificationType type = NotificationType.Info);
         List<InAppNotificationService> GetInAppNotifications();
         Task MarkAsReadAsync(string notificationId);
         Task ClearInAppNotificationsAsync();
         int GetUnreadCount();
+
+        // SignalR connection management
+        Task InitializeSignalRAsync(string hubUrl);
+        Task DisconnectSignalRAsync();
+        bool IsSignalRConnected { get; }
     }
 }

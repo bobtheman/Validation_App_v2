@@ -43,16 +43,17 @@ namespace AccreditValidation.Components.Base.Notification
         private void ClosePanel()
         {
             IsPanelVisible = false;
+            StateHasChanged();
         }
 
-        private async Task OnNotificationTapped(InAppNotificationService notification)
+        private async Task HandleNotificationTapped(InAppNotificationService notification)
         {
             await NotificationService.MarkAsReadAsync(notification.Id);
             RefreshNotifications();
             StateHasChanged();
         }
 
-        private async Task OnMarkAllRead()
+        private async Task HandleMarkAllRead()
         {
             foreach (var notification in Notifications)
             {
@@ -62,38 +63,11 @@ namespace AccreditValidation.Components.Base.Notification
             StateHasChanged();
         }
 
-        private async Task OnClearAll()
+        private async Task HandleClearAll()
         {
             await NotificationService.ClearInAppNotificationsAsync();
             RefreshNotifications();
             StateHasChanged();
-        }
-
-        private string GetTypeColor(NotificationType type) => type switch
-        {
-            NotificationType.Info => "#17a2b8",
-            NotificationType.Success => "#28a745",
-            NotificationType.Warning => "#ffc107",
-            NotificationType.Error => "#dc3545",
-            _ => "#6c757d"
-        };
-
-        private string GetTypeIcon(NotificationType type) => type switch
-        {
-            NotificationType.Info => "ℹ️",
-            NotificationType.Success => "✓",
-            NotificationType.Warning => "⚠️",
-            NotificationType.Error => "✕",
-            _ => "•"
-        };
-
-        private string GetTimeAgo(DateTime timestamp)
-        {
-            var span = DateTime.Now - timestamp;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes}m ago";
-            if (span.TotalHours < 24) return $"{(int)span.TotalHours}h ago";
-            return $"{(int)span.TotalDays}d ago";
         }
 
         public void Dispose()
