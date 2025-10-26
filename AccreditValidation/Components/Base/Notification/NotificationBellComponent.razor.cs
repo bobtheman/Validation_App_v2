@@ -1,7 +1,7 @@
 ﻿using AccreditValidation.Shared.Services.Notification;
 using System.Collections.ObjectModel;
 
-namespace AccreditValidation.Components.Notification
+namespace AccreditValidation.Components.Base.Notification
 {
     public partial class NotificationBellComponent
     {

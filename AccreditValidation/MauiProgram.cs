@@ -53,6 +53,7 @@
             builder.Services.AddSingleton<IDevicePlaformHelper, DevicePlaformHelper>();
             builder.Services.AddSingleton<IScannerCodeHelper, ScannerCodeHelper>();
             builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSingleton<INotificationService, NotificationService>();
 
             // Fingerprint Auth
             builder.Services.AddSingleton(typeof(IFingerprint), CrossFingerprint.Current);
@@ -78,14 +79,6 @@
             // Set the current activity resolver
             #if ANDROID
             CrossFingerprint.SetCurrentActivityResolver(() => Platform.CurrentActivity);
-#endif
-
-#if ANDROID
-            builder.Services.AddSingleton<INotificationService, NotificationService>();
-#elif IOS
-        builder.Services.AddSingleton<INotificationService, AccreditValidation.Components.Services.NotificationService>();
-#elif WINDOWS
-        builder.Services.AddSingleton<INotificationService, AccreditValidation.Components.Services.NotificationService>();
 #endif
 
             return builder.Build();

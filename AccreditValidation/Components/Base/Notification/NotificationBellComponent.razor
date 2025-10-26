@@ -6,13 +6,12 @@
 
 <div class="notification-bell-container">
     <button class="bell-button" @onclick="TogglePanel">
-        <span class="bell-icon">🔔</span>
+        <i class="bi bi-bell" style="color: white;"></i>
         @if (UnreadCount > 0)
         {
             <span class="badge">@UnreadCount</span>
         }
     </button>
-
     @if (IsPanelVisible)
     {
         <div class="notification-panel">
@@ -20,7 +19,6 @@
                 <h3>Notifications</h3>
                 <button class="close-btn" @onclick="ClosePanel">✕</button>
             </div>
-
             <div class="notifications-list">
                 @if (Notifications.Count == 0)
                 {
@@ -46,7 +44,6 @@
                     }
                 }
             </div>
-
             @if (Notifications.Count > 0)
             {
                 <div class="panel-footer">

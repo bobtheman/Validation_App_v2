@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using AccreditValidation.Components.Base.Notification
 
 <AuthWrapper>
     <div class="page @AppState.CustomBackgroundClass">
@@ -6,8 +7,14 @@
             <NavMenu />
         </div>
         <header class="header">
-            <div class="header-content">
-                @AppState.SelectedPage
+            <div class="header-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0;">
+                <div style="flex: 1;"></div>
+                <div style="flex: 1; text-align: center;">
+                    @AppState.SelectedPage
+                </div>
+                <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding-right: 16px;">
+                    <NotificationBellComponent @ref="notificationBell" />
+                </div>
             </div>
         </header>
         <main class="main" style="margin: 0; padding: 0;">

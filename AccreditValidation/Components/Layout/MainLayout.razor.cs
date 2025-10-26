@@ -1,5 +1,6 @@
 namespace AccreditValidation.Components.Layout
 {
+    using AccreditValidation.Components.Base.Notification;
     using AccreditValidation.Components.Services.Interface;
     using AccreditValidation.Shared.Services.AlertService;
     using Microsoft.AspNetCore.Components;
@@ -15,6 +16,7 @@ namespace AccreditValidation.Components.Layout
 
         private Action? _appStateChangedHandler;
         private TaskCompletionSource<bool>? _confirmTcs;
+        private NotificationBellComponent? notificationBell;
 
         private bool IsConfirmVisible { get; set; }
         private bool IsShowModalVisible { get; set; }
