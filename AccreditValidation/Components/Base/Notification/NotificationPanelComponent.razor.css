@@ -27,7 +27,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background-color: #d3d3d3;
+    background-color: #fff;
+    color:#000000;
     border-bottom: 1px solid #dee2e6;
 }
 
@@ -67,7 +68,6 @@
     margin: 10px 5px;
     cursor: pointer;
     border-radius: 5px;
-    transition: background-color 0.2s;
 }
 
     .notification-item:hover {
@@ -141,7 +141,7 @@
     display: flex;
     gap: 10px;
     padding: 10px;
-    background-color: #f5f5f5;
+    background-color: #ffffff;
     border-top: 1px solid #dee2e6;
 }
 

@@ -82,7 +82,7 @@
                     await AlertService.ShowSuccessAlertAsync("SignalR", "Connected to notification hub");
 
                     // Send a test notification to verify it's working
-                    await TestSignalRConnectionAsync();
+                    //await TestSignalRConnectionAsync();
                 }
                 else
                 {
