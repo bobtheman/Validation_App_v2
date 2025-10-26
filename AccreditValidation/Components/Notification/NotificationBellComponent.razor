@@ -1,0 +1,59 @@
+﻿@using AccreditValidation.Components.Services.Interface
+@using AccreditValidation.Shared.Services.Notification
+@using System.Collections.ObjectModel
+@inject INotificationService NotificationService
+@implements IDisposable
+
+<div class="notification-bell-container">
+    <button class="bell-button" @onclick="TogglePanel">
+        <span class="bell-icon">🔔</span>
+        @if (UnreadCount > 0)
+        {
+            <span class="badge">@UnreadCount</span>
+        }
+    </button>
+
+    @if (IsPanelVisible)
+    {
+        <div class="notification-panel">
+            <div class="panel-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" @onclick="ClosePanel">✕</button>
+            </div>
+
+            <div class="notifications-list">
+                @if (Notifications.Count == 0)
+                {
+                    <div class="empty-state">
+                        <p>No notifications</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var notification in Notifications)
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread")"
+                             @onclick="() => OnNotificationTapped(notification)">
+                            <div class="notification-icon" style="background-color: @GetTypeColor(notification.Type)">
+                                <span>@GetTypeIcon(notification.Type)</span>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">@notification.Title</div>
+                                <div class="notification-message">@notification.Message</div>
+                                <div class="notification-time">@GetTimeAgo(notification.Timestamp)</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            @if (Notifications.Count > 0)
+            {
+                <div class="panel-footer">
+                    <button class="action-btn" @onclick="OnMarkAllRead">Mark All Read</button>
+                    <button class="action-btn danger" @onclick="OnClearAll">Clear All</button>
+                </div>
+            }
+        </div>
+    }
+</div>
