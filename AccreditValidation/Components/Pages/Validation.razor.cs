@@ -163,8 +163,8 @@ namespace AccreditValidation.Components.Pages
             }
 
             badgeValidationRequest.Barcode = barcode;
-            badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
-            badgeValidationRequest.DateTime = DateTime.Now;
+            badgeValidationRequest.AreaId = selectedAreaIdentifier;
+            badgeValidationRequest.Timestamp = DateTime.Now;
 
             if (selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString())
             {

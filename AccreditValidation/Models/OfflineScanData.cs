@@ -12,12 +12,8 @@
 
         public string? Barcode { get; set; }
 
-        public int? ContactID { get; set; }
-
-        public string? ExternalID { get; set; }
-
         [Required]
-        public string? AreaIdentifier { get; set; }
+        public string? AreaId { get; set; }
 
         public string? AreaName { get; set; }
 

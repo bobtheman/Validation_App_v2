@@ -79,7 +79,7 @@ namespace AccreditValidation.Components.Pages
                 var result = await RestDataService.SyncValidationResults(offlineScaData.Select(x => new BadgeValidationRequest
                 {
                     Barcode = x.Barcode,
-                    AreaIdentifier = x.AreaIdentifier
+                    AreaId = x.AreaId
                 }));
 
                 if (result == null || result.HttpStatusCode != (int)HttpStatusCode.OK)

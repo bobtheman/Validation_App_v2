@@ -161,7 +161,7 @@
                     return badgeValidationResponse;
                 }
 
-                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaIdentifier))
+                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaId))
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
                     badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
@@ -180,7 +180,7 @@
 
                 var areaValidationResults = await GetAllAreaValidationResultAsync();
                 var successfulAreaValidationResult = areaValidationResults?
-                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaIdentifier && avr.Barcode == barcodeInt);
+                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaId && avr.Barcode == barcodeInt);
 
                 badgeValidationResponse.ValidationResult = successfulAreaValidationResult != null
                 ? (long)successfulAreaValidationResult.ValidationResult
@@ -256,17 +256,15 @@
                     throw new ArgumentNullException(nameof(badgeValidationRequest));
                 }
 
-                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaIdentifier);
+                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaId);
 
                 var offlineScanData = new OfflineScanData
                 {
                     Barcode = badgeValidationRequest.Barcode,
-                    AreaIdentifier = badgeValidationRequest.AreaIdentifier,
+                    AreaId = badgeValidationRequest.AreaId,
                     AreaName = area.Name,
-                    ContactID = badgeValidationRequest.ContactID,
-                    ExternalID = badgeValidationRequest.ExternalID,
-                    DateTime = badgeValidationRequest.DateTime,
-                    ScannedDateTime = badgeValidationRequest.DateTime,
+                    DateTime = badgeValidationRequest.Timestamp,
+                    ScannedDateTime = badgeValidationRequest.Timestamp,
                     Mode = badgeValidationRequest.Mode,
                     Direction = badgeValidationRequest.Direction,
                     ValidationResult = validationResult

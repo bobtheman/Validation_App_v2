@@ -6,14 +6,10 @@
     {
         public string? Barcode { get; set; }
 
-        public int? ContactID { get; set; }
-
-        public string? ExternalID { get; set; }
-
         [Required]
-        public string? AreaIdentifier { get; set; }
+        public string? AreaId { get; set; }
 
-        public DateTime DateTime { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public Enums.ValidationMode Mode { get; set; } = Enums.ValidationMode.Online;
 
