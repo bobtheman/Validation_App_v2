@@ -309,7 +309,7 @@ namespace AccreditValidation.Components.Pages
             if (response?.Badge == null)
             {
                 SetDangerBackground();
-                PhotoUrl = await FileService.GetImageBaseString("nouserplaceholder.svg");
+                PhotoUrl = ConstantsName.DefaultImage;
                 OrganisationName = LocalizationService["Error"];
                 SubTypeName = LocalizationService["InvalidBarcode"];
                 Name = LocalizationService["BadgeNotFound"];

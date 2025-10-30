@@ -91,5 +91,9 @@
         public static string SecureStorageToken = "token";
         public static string SecureStorageServerUrl = "serverUrl";
         #endregion
+
+        #region default image
+        public static string DefaultImage = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgICAgdmlld0JveD0iMCAwIDY0IDY0IgogICAgIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIKICAgICByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUtZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+Tm8gdXNlcjwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkNpcmN1bGFyIHBsYWNlaG9sZGVyIGF2YXRhciBzaG93aW5nIGEgZ2VuZXJpYyB1c2VyIHNpbGhvdWV0dGU8L2Rlc2M+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzEiIGZpbGw9IiNFNkU2RTYiLz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjIyIiByPSI5IiBmaWxsPSIjQjNCM0IzIi8+CiAgPHBhdGggZD0iTTEwIDUwYzAtOCA4LTE0IDIyLTE0czIyIDYgMjIgMTR2MkgxMHYtMnoiIGZpbGw9IiNCM0IzQjMiIC8+Cjwvc3ZnPg==";
+        #endregion
     }
 }
