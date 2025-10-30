@@ -9,7 +9,7 @@
         public int Id { get; set; }
 
         [JsonPropertyName("Barcode")]
-        public int Barcode { get; set; }
+        public string Barcode { get; set; }
 
         [JsonPropertyName("ContactId")]
         public int ContactId { get; set; }

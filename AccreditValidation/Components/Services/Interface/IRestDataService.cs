@@ -1,6 +1,6 @@
 ﻿namespace AccreditValidation.Components.Services.Interface
 {
-    using global::AccreditValidation.Requests;
+    using global::AccreditValidation.Requests.V2;
     using global::AccreditValidation.Responses;
     using global::AccreditValidation.Models;
 

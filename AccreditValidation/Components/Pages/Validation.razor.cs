@@ -3,7 +3,7 @@ namespace AccreditValidation.Components.Pages
     using AccreditValidation.Components.Services.Interface;
     using AccreditValidation.Helper.Interface;
     using AccreditValidation.Models;
-    using AccreditValidation.Requests;
+    using AccreditValidation.Requests.V2;
     using AccreditValidation.Responses;
     using AccreditValidation.Shared.Constants;
     using AccreditValidation.Shared.Services.AlertService;
@@ -41,6 +41,7 @@ namespace AccreditValidation.Components.Pages
         private string SubTypeName { get; set; } = string.Empty;
         private string Name { get; set; } = string.Empty;
         private string Direction { get; set; } = string.Empty;
+        private string ValidationResultName { get; set; } = string.Empty;
         private bool ShowFilter { get; set; } = false;
         public static string SelectedScannerName { get; set; } = string.Empty;
         private BarcodeReader MSelectedReader { get; set; }
@@ -163,8 +164,8 @@ namespace AccreditValidation.Components.Pages
             }
 
             badgeValidationRequest.Barcode = barcode;
-            badgeValidationRequest.AreaId = selectedAreaIdentifier;
-            badgeValidationRequest.Timestamp = DateTime.Now;
+            badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
+            badgeValidationRequest.DateTime = DateTime.Now;
 
             if (selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString())
             {
@@ -308,10 +309,12 @@ namespace AccreditValidation.Components.Pages
             if (response?.Badge == null)
             {
                 SetDangerBackground();
+                PhotoUrl = await FileService.GetImageBaseString("nouserplaceholder.svg");
                 OrganisationName = LocalizationService["Error"];
                 SubTypeName = LocalizationService["InvalidBarcode"];
                 Name = LocalizationService["BadgeNotFound"];
                 Direction = $"{LocalizationService["Direction"]} : {DirectionList.FirstOrDefault(d => d.IsSelected)?.Direction ?? string.Empty}";
+                ValidationResultName = SetLocalizedValidationResultName(response?.ValidationResultName);
                 ShowResult = true;
                 ShowFilter = true;
                 StateHasChanged();
@@ -352,7 +355,37 @@ namespace AccreditValidation.Components.Pages
             SubTypeName = response.Badge?.RegistrationSubTypeName ?? string.Empty;
             Name = $"{response.Badge?.Forename} {response.Badge?.Surname}" ?? string.Empty;
             Direction = $"{LocalizationService["Direction"]} : {DirectionList.FirstOrDefault(d => d.IsSelected)?.Direction ?? string.Empty}";
+            ValidationResultName = SetLocalizedValidationResultName(response.ValidationResultName);
             StateHasChanged();
+        }
+
+        private string SetLocalizedValidationResultName(string? validationResultName)
+        {
+            if (string.IsNullOrWhiteSpace(validationResultName))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var localized = LocalizationService[validationResultName];
+
+                if (string.IsNullOrEmpty(localized))
+                {
+                    return string.Empty;
+                }
+
+                if (string.Equals(localized, validationResultName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Empty;
+                }
+
+                return localized;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         private void ResetFrom()

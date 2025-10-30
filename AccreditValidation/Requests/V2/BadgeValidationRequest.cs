@@ -1,4 +1,4 @@
-﻿namespace AccreditValidation.Requests
+﻿namespace AccreditValidation.Requests.V2
 {
     using System.ComponentModel.DataAnnotations;
 
@@ -7,9 +7,9 @@
         public string? Barcode { get; set; }
 
         [Required]
-        public string? AreaId { get; set; }
+        public string? AreaIdentifier { get; set; }
 
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime DateTime { get; set; } = DateTime.UtcNow;
 
         public Enums.ValidationMode Mode { get; set; } = Enums.ValidationMode.Online;
 

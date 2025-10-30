@@ -18,6 +18,6 @@
         public string? ValidationResultName { get; set; }
 
         [JsonIgnore]
-        public int Barcode { get; set; }
+        public string? Barcode { get; set; }
     }
 }

@@ -74,16 +74,16 @@ namespace AccreditValidation.Components
                 }
 
                 //Todo - remove, local testing
-                userLoginModel.SiteName = "QASTAGINGV5-UAT";
-                userLoginModel.Username = "QASTAGINGAPI";
+                userLoginModel.SiteName = "QATEST2024-TEST";
+                userLoginModel.Username = "martinapi";
                 userLoginModel.Password = "EAS!dsaq123ew";
                 userLoginModel.RememberMe = true;
                 userLoginModel.SelectedLanguageCode = await SecureStorage.GetAsync("selectedLanguageCode") ?? "en-GB";
 
-                if (userLoginModel.SiteName == "QASTAGINGV5-UAT")
+                if (userLoginModel.SiteName == "QATEST2024-TEST")
                 {
                     //userLoginModel.ServerUrl = ($"https://qastagingv5-api-uat.accredit-solutions.com");
-                    userLoginModel.ServerUrl = "http://pmmvnmqqbk.loclx.io";
+                    userLoginModel.ServerUrl = "http://r8gfcle6pr.loclx.io";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);
@@ -100,7 +100,7 @@ namespace AccreditValidation.Components
 
                 NavigationManager.NavigateTo("/Validation", true);
 
-                AppState.ShowSpinner = false; ;
+                AppState.ShowSpinner = false;
             }
             catch (Exception ex)
             {
@@ -261,24 +261,6 @@ namespace AccreditValidation.Components
         private void ToggleSiteNameVisibility()
         {
             isSiteNameVisible = !isSiteNameVisible;
-        }
-
-        private async void OnTestButtonClick()
-        {
-            var hasPermission = await NotificationService.RequestPermissionAsync();
-
-            if (hasPermission)
-            {
-                await NotificationService.ShowNotificationAsync(
-                    "Button Clicked!",
-                    "You pressed the button at " + DateTime.Now.ToShortTimeString(),
-                    id: 1);
-            }
-        }
-
-        private async void OnTestButtonClick2()
-        {
-            NavigationManager.NavigateTo("/example", true);
         }
     }
 }

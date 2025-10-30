@@ -122,10 +122,12 @@
     <ItemGroup>
       <MauiImage Include="Platforms\Android\Resources\drawable\splash.png" />
       <MauiImage Include="wwwroot\Images\logo.png" />
+      <MauiImage Include="wwwroot\Images\nouserplaceholder.svg" />
     </ItemGroup>
 
     <ItemGroup>
       <None Include="wwwroot\Images\logo.png" />
+      <None Include="wwwroot\Images\nouserplaceholder.svg" />
     </ItemGroup>
 
     <ItemGroup>

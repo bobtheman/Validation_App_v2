@@ -2,7 +2,7 @@ namespace AccreditValidation.Components.Pages
 {
     using AccreditValidation.Components.Services.Interface;
     using AccreditValidation.Models;
-    using AccreditValidation.Requests;
+    using AccreditValidation.Requests.V2;
     using AccreditValidation.Shared.Constants;
     using AccreditValidation.Shared.Services.AlertService;
     using Microsoft.AspNetCore.Components;
@@ -79,7 +79,7 @@ namespace AccreditValidation.Components.Pages
                 var result = await RestDataService.SyncValidationResults(offlineScaData.Select(x => new BadgeValidationRequest
                 {
                     Barcode = x.Barcode,
-                    AreaId = x.AreaId
+                    AreaIdentifier = x.AreaId
                 }));
 
                 if (result == null || result.HttpStatusCode != (int)HttpStatusCode.OK)

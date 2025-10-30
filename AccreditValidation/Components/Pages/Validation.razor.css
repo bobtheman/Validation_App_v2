@@ -1,5 +1,6 @@
-﻿.btn-primary {
-    background-color: #2563eb; /* blue-600 */
+﻿/* Button styles */
+.btn-primary {
+    background-color: #2563eb;
     color: white;
     font-weight: 600;
     border: none;
@@ -8,12 +9,12 @@
 }
 
     .btn-primary:hover {
-        background-color: #1e40af; /* blue-800 */
+        background-color: #1e40af;
     }
 
 .btn-secondary {
-    background-color: #e5e7eb; /* gray-200 */
-    color: #374151; /* gray-700 */
+    background-color: #e5e7eb;
+    color: #374151;
     font-weight: 600;
     border: none;
     cursor: pointer;
@@ -21,9 +22,10 @@
 }
 
     .btn-secondary:hover {
-        background-color: #d1d5db; /* gray-300 */
+        background-color: #d1d5db;
     }
 
+/* Validation components */
 .validation-frame {
     padding: 10px;
     margin: 10px 0;
@@ -33,7 +35,7 @@
 }
 
 .validation-picker {
-    padding: 4px 6px;
+    padding: 8px 10px;
     font-size: 0.875rem;
     width: 100%;
     border-radius: 6px;
@@ -50,6 +52,7 @@
     background-color: #fff;
 }
 
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -67,15 +70,43 @@
     border-radius: 8px;
 }
 
+/* Validation container - updated for better mobile layout */
+#validation_holder_container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: calc(100vh - 120px); /* Account for header */
+    overflow: hidden;
+}
+
+/* Filter section */
+#filter_holder_div {
+    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 50vh;
+    padding-bottom: 1rem;
+}
+
+/* Photo holder */
 #validation_photo_holder {
     margin-top: 1px;
-    min-height: 150px;
-    min-width: 150px;
+    min-height: 120px;
+    min-width: 120px;
+    max-width: 200px;
+    height: auto;
+    object-fit: cover;
 }
 
+/* Result holder - scrollable section */
 #validation_result_holder {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem 0.5rem;
+    margin-top: 1rem;
 }
 
+/* Denied text overlay */
 #validation_result_denied {
     position: absolute;
     top: 50%;
@@ -89,7 +120,82 @@
     z-index: 2;
 }
 
+/* Image container */
 #validation_image_div {
     position: relative;
-    display: inline-block
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 640px) {
+    #validation_holder_container {
+        max-height: calc(100vh - 100px);
+        padding: 0.5rem;
+    }
+
+    #filter_holder_div {
+        max-height: 40vh;
+    }
+
+    #validation_photo_holder {
+        min-height: 100px;
+        min-width: 100px;
+        max-width: 150px;
+    }
+
+    #validation_result_holder {
+        padding: 0.75rem 0.25rem;
+    }
+
+    #validation_result_denied {
+        font-size: 1.2rem;
+    }
+
+    .validation-picker,
+    .validation-select {
+        font-size: 0.8125rem;
+        padding: 0.4rem;
+    }
+
+    /* Make buttons stack better on mobile */
+    .btn {
+        padding: 0.4rem 0.8rem;
+    }
+
+    /* Adjust header font sizes */
+    h2 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Result text sizing */
+    #validation_result_holder p {
+        font-size: 0.9rem;
+        margin: 0.25rem 0;
+    }
+
+        #validation_result_holder p:first-of-type {
+            font-size: 1rem;
+        }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+    #validation_holder_container {
+        padding: 0.25rem;
+    }
+
+    #validation_photo_holder {
+        min-height: 80px;
+        min-width: 80px;
+        max-width: 120px;
+    }
+
+    h2 {
+        font-size: 1rem !important;
+    }
+
+    .validation-picker {
+        font-size: 0.75rem;
+    }
 }

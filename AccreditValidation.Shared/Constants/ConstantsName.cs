@@ -61,5 +61,35 @@
         public static string Online = "Online";
         public static string Offline = "Offline";
         #endregion
+
+        #region Endpoints   
+        public static class Endpoints
+        {
+            public static string Validation = "/api/v2/badge/Validation";
+            public static string Areas = "/api/v2/badge/Areas";
+            public static string ValidationResults = "/api/v2/badge/validationResults";
+        }
+        #endregion
+
+        #region Headers
+        public static class Headers
+        {
+            public static string Authorization = "Authorization";
+            public static string Bearer = "Bearer";
+            public static string ContentType = "Content-Type";
+        }
+        #endregion
+
+        #region MimeTypes
+        public static class MimeTypes
+        {
+            public static string ApplicationJson = "application/json";
+        }
+        #endregion
+
+        #region SecureStorage
+        public static string SecureStorageToken = "token";
+        public static string SecureStorageServerUrl = "serverUrl";
+        #endregion
     }
 }

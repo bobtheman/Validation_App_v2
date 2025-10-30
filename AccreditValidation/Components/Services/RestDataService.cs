@@ -2,7 +2,7 @@
 {
     using global::AccreditValidation.Components.Services.Interface;
     using global::AccreditValidation.Models;
-    using global::AccreditValidation.Requests;
+    using global::AccreditValidation.Requests.V2;
     using global::AccreditValidation.Responses;
     using RestSharp;
     using System.Collections.Generic;
@@ -10,6 +10,7 @@
     using System.Net.Http.Headers;
     using System.Text;
     using System.Text.Json;
+    using static global::AccreditValidation.Shared.Constants.ConstantsName;
 
     public class RestDataService : IRestDataService
     {
@@ -29,9 +30,9 @@
 
             try
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await SecureStorage.GetAsync("token"));
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync("serverUrl")}/api/v2/badge/Areas");
+                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Areas}");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -63,9 +64,9 @@
 
             try
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await SecureStorage.GetAsync("token"));
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync("serverUrl")}/api/v2/badge/validationResults");
+                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.ValidationResults}");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -162,23 +163,33 @@
 
             BadgeValidationResponse badgeValidationResponse = new BadgeValidationResponse();
 
-            if (string.IsNullOrEmpty(await SecureStorage.GetAsync("serverUrl")))
+            if (string.IsNullOrEmpty(await SecureStorage.GetAsync(SecureStorageServerUrl)))
             {
                 return badgeValidationResponse;
             }
 
             try
             {
-                var clientOptions = new RestClientOptions(await SecureStorage.GetAsync("serverUrl"))
-                {
-                    MaxTimeout = -1,
-                };
+                var temp = await SecureStorage.GetAsync(SecureStorageServerUrl);
+                var temp2 = Endpoints.Validation;
+
+                var clientOptions = new RestClientOptions(await SecureStorage.GetAsync(SecureStorageServerUrl));
                 var client = new RestClient(clientOptions);
-                var request = new RestRequest("/api/v2/badge/Validation", Method.Post);
-                request.AddHeader("Content-Type", "application/json");
-                request.AddHeader("Authorization", $"Bearer {await SecureStorage.GetAsync("token")}");
+                var request = new RestRequest(Endpoints.Validation, Method.Post);
+                request.AddHeader(Headers.ContentType, MimeTypes.ApplicationJson);
+                request.AddHeader(Headers.Authorization, $"{Headers.Bearer} {await SecureStorage.GetAsync(SecureStorageToken)}");
 
                 request.AddStringBody(JsonSerializer.Serialize(validationRequest), DataFormat.Json);
+
+                string jsonBody = JsonSerializer.Serialize(validationRequest);
+                var headersList = new List<string>();
+                foreach (var p in request.Parameters)
+                {
+                    if (p.Type == ParameterType.HttpHeader)
+                    {
+                        headersList.Add($"{p.Name}: {p.Value}");
+                    }
+                }
 
                 RestResponse response = await client.ExecuteAsync(request);
 
@@ -207,13 +218,13 @@
 
             try
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await SecureStorage.GetAsync("token"));
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
                 var jsonContent = JsonSerializer.Serialize(request);
 
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var content = new StringContent(jsonContent, Encoding.UTF8, MimeTypes.ApplicationJson);
 
-                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync("serverUrl")}/api/v2/badge/validationResults", content);
+                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.ValidationResults}", content);
 
                 if (responseMessage.IsSuccessStatusCode)
                 {

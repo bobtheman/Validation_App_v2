@@ -2,7 +2,7 @@
 {
     using global::AccreditValidation.Components.Services.Interface;
     using global::AccreditValidation.Models;
-    using global::AccreditValidation.Requests;
+    using global::AccreditValidation.Requests.V2;
     using global::AccreditValidation.Responses;
     using global::AccreditValidation.Shared.Constants;
     using SQLite;
@@ -154,14 +154,14 @@
                     return badgeValidationResponse;
                 }
 
-                if (string.IsNullOrWhiteSpace(badgeValidationRequest.Barcode) || !int.TryParse(badgeValidationRequest.Barcode, out int barcodeInt))
+                if (string.IsNullOrWhiteSpace(badgeValidationRequest.Barcode))
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
                     badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
                     return badgeValidationResponse;
                 }
 
-                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaId))
+                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaIdentifier))
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
                     badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
@@ -169,7 +169,7 @@
                 }
 
                 var badges = await GetAllBadgeAsync();
-                var badge = badges?.FirstOrDefault(b => b.Barcode == barcodeInt);
+                var badge = badges?.FirstOrDefault(b => b.Barcode == badgeValidationRequest.Barcode);
 
                 if (badge == null)
                 {
@@ -180,7 +180,7 @@
 
                 var areaValidationResults = await GetAllAreaValidationResultAsync();
                 var successfulAreaValidationResult = areaValidationResults?
-                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaId && avr.Barcode == barcodeInt);
+                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaIdentifier && avr.Barcode == badgeValidationRequest.Barcode);
 
                 badgeValidationResponse.ValidationResult = successfulAreaValidationResult != null
                 ? (long)successfulAreaValidationResult.ValidationResult
@@ -256,15 +256,15 @@
                     throw new ArgumentNullException(nameof(badgeValidationRequest));
                 }
 
-                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaId);
+                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaIdentifier);
 
                 var offlineScanData = new OfflineScanData
                 {
                     Barcode = badgeValidationRequest.Barcode,
-                    AreaId = badgeValidationRequest.AreaId,
+                    AreaId = badgeValidationRequest.AreaIdentifier,
                     AreaName = area.Name,
-                    DateTime = badgeValidationRequest.Timestamp,
-                    ScannedDateTime = badgeValidationRequest.Timestamp,
+                    DateTime = badgeValidationRequest.DateTime,
+                    ScannedDateTime = badgeValidationRequest.DateTime,
                     Mode = badgeValidationRequest.Mode,
                     Direction = badgeValidationRequest.Direction,
                     ValidationResult = validationResult

@@ -1,5 +1,5 @@
 ﻿using AccreditValidation.Models;
-using AccreditValidation.Requests;
+using AccreditValidation.Requests.V2;
 using AccreditValidation.Responses;
 using SQLite;
 
