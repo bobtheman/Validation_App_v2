@@ -4,11 +4,11 @@
 
     public class BadgeValidationResponse
     {
-        [JsonPropertyName("ValidationResult")]
-        public long ValidationResult { get; set; }
+        [JsonPropertyName("Code")]
+        public long Code { get; set; }
 
-        [JsonPropertyName("ValidationResultName")]
-        public string? ValidationResultName { get; set; }
+        [JsonPropertyName("Result")]
+        public string Result { get; set; }
 
         [JsonPropertyName("Badge")]
         public Models.Badge? Badge { get; set; }
@@ -16,7 +16,6 @@
         [JsonPropertyName("HttpStatusCode")]
         public long HttpStatusCode { get; set; }
 
-        [JsonPropertyName("Errors")]
-        public object[]? Errors { get; set; }
+        public int ValidationResult { get; set; }
     }
 }

@@ -27,6 +27,7 @@
 
         public int ValidationResult { get; set; }
         
+        [Ignore]    
         [ForeignKey("Barcode")]
         public virtual Badge? Badge { get; set; }
     }

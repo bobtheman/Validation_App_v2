@@ -50,79 +50,34 @@
             AlertService.OnConfirmRequested += ShowConfirmDialog;
             AlertService.OnModalRequested += ShowModalDialog;
 
-            // FIXED: Initialize SignalR with proper error handling and debugging
-            await InitializeSignalRWithDebugAsync();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await InitializeSignalRWithDebugAsync();
+                }
+                catch (Exception ex)
+                {
+                }
+            });
         }
 
         private async Task InitializeSignalRWithDebugAsync()
         {
             try
             {
-                Debug.WriteLine("🔵 Starting SignalR initialization...");
-
-                // Read hub URL from appsettings.json
                 var hubUrl = Configuration["SignalR:HubUrl"];
                 
                 if (string.IsNullOrEmpty(hubUrl))
                 {
-                    Debug.WriteLine("❌ SignalR hub URL not configured in appsettings.json");
-                    await AlertService.ShowErrorAlertAsync("Configuration Error", "SignalR hub URL is not configured.");
                     return;
                 }
 
-                Debug.WriteLine($"🔵 Hub URL: {hubUrl}");
-                Debug.WriteLine($"🔵 Platform: {DeviceInfo.Platform}");
-
                 await NotificationService.InitializeSignalRAsync(hubUrl);
-
-                // Check connection status
-                if (NotificationService.IsSignalRConnected)
-                {
-                    Debug.WriteLine("✅ SignalR connection established successfully!");
-                    await AlertService.ShowSuccessAlertAsync("SignalR", "Connected to notification hub");
-
-                    // Send a test notification to verify it's working
-                    //await TestSignalRConnectionAsync();
-                }
-                else
-                {
-                    Debug.WriteLine("❌ SignalR connection failed!");
-                    await AlertService.ShowErrorAlertAsync("SignalR Error", "Failed to connect to notification hub. Check if the server is running.");
-                }
-            }
-            catch (HttpRequestException httpEx)
-            {
-                Debug.WriteLine($"❌ HTTP Error connecting to SignalR: {httpEx.Message}");
-                Debug.WriteLine($"   Inner Exception: {httpEx.InnerException?.Message}");
-                await AlertService.ShowErrorAlertAsync(
-                    "Connection Error",
-                    $"Cannot reach SignalR server. Make sure the server is running.\n\nError: {httpEx.Message}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Error initializing SignalR: {ex.Message}");
-                Debug.WriteLine($"   Stack Trace: {ex.StackTrace}");
-                await AlertService.ShowErrorAlertAsync(
-                    "SignalR Error",
-                    $"Failed to initialize notifications: {ex.Message}");
-            }
-        }
 
-        private async Task TestSignalRConnectionAsync()
-        {
-            try
-            {
-                Debug.WriteLine("🧪 Testing SignalR connection with a test notification...");
-
-                // This will show up if the connection is working
-                await NotificationService.ShowInAppNotificationAsync(
-                    "System",
-                    "SignalR notifications are now active!",
-                    NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Test notification failed: {ex.Message}");
             }
         }
 
@@ -140,15 +95,13 @@
                 AppState.OnChange -= _appStateChangedHandler;
             }
 
-            // FIXED: Properly disconnect SignalR on dispose
             try
             {
                 NotificationService.DisconnectSignalRAsync().GetAwaiter().GetResult();
-                Debug.WriteLine("✅ SignalR connection closed gracefully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"⚠️ Error disconnecting SignalR: {ex.Message}");
+
             }
         }
 

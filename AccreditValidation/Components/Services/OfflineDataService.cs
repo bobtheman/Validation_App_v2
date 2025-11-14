@@ -2,7 +2,7 @@
 {
     using global::AccreditValidation.Components.Services.Interface;
     using global::AccreditValidation.Models;
-    using global::AccreditValidation.Requests.V2;
+    using global::AccreditValidation.Requests.V3;
     using global::AccreditValidation.Responses;
     using global::AccreditValidation.Shared.Constants;
     using SQLite;
@@ -15,10 +15,12 @@
         private readonly string dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
         private SQLiteAsyncConnection db;
         private readonly IRestDataService _restDataService;
+        private readonly ILocalizationService _localizationService;
 
-        public OfflineDataService(IRestDataService restDataService)
+        public OfflineDataService(IRestDataService restDataService, ILocalizationService localizationService)
         {
             _restDataService = restDataService;
+            _localizationService = localizationService;
             dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
             db = new SQLiteAsyncConnection(dbPath);
         }
@@ -121,6 +123,13 @@
 
                     if (validationData?.Badge != null)
                     {
+                        if (validationData.Badge.Photo != null)
+                        {
+                            validationData.Badge.PhotoId = validationData.Badge.Photo.Id;
+                            validationData.Badge.PhotoFileName = validationData.Badge.Photo.PhotoFileName;
+                            validationData.Badge.PhotoUrl = validationData.Badge.Photo.PhotoUrl;
+                        }
+
                         await db.InsertAsync(validationData.Badge);
                     }
 
@@ -150,21 +159,21 @@
                 if (badgeValidationRequest == null || db == null)
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
+                    badgeValidationResponse.Result = await _localizationService.SetLocalizedValidationResultName(ConstantsName.BadgeNotFound);
                     return badgeValidationResponse;
                 }
 
                 if (string.IsNullOrWhiteSpace(badgeValidationRequest.Barcode))
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
+                    badgeValidationResponse.Result = await _localizationService.SetLocalizedValidationResultName(ConstantsName.BadgeNotFound);
                     return badgeValidationResponse;
                 }
 
-                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaIdentifier))
+                if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaId))
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
+                    badgeValidationResponse.Result = await _localizationService.SetLocalizedValidationResultName(ConstantsName.BadgeNotFound);
                     return badgeValidationResponse;
                 }
 
@@ -174,18 +183,18 @@
                 if (badge == null)
                 {
                     badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
+                    badgeValidationResponse.Result = await _localizationService.SetLocalizedValidationResultName(ConstantsName.BadgeNotFound);
                     return badgeValidationResponse;
                 }
 
                 var areaValidationResults = await GetAllAreaValidationResultAsync();
                 var successfulAreaValidationResult = areaValidationResults?
-                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaIdentifier && avr.Barcode == badgeValidationRequest.Barcode);
+                    .FirstOrDefault(avr => avr.AreaId == badgeValidationRequest.AreaId && avr.Barcode == badgeValidationRequest.Barcode);
 
-                badgeValidationResponse.ValidationResult = successfulAreaValidationResult != null
+                badgeValidationResponse.ValidationResult = (int)(successfulAreaValidationResult != null
                 ? (long)successfulAreaValidationResult.ValidationResult
-                    : Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                badgeValidationResponse.ValidationResultName = successfulAreaValidationResult?.ValidationResultName ?? ConstantsName.BadgeNotFound;
+                    : Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound));
+                badgeValidationResponse.Result = successfulAreaValidationResult?.ValidationResultName ?? await _localizationService.SetLocalizedValidationResultName(ConstantsName.BadgeNotFound);
 
                 await UpdateOfflineScanDataAsync(badgeValidationRequest, (int)(successfulAreaValidationResult?.ValidationResult ?? Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound)));
 
@@ -256,15 +265,15 @@
                     throw new ArgumentNullException(nameof(badgeValidationRequest));
                 }
 
-                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaIdentifier);
+                var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaId);
 
                 var offlineScanData = new OfflineScanData
                 {
                     Barcode = badgeValidationRequest.Barcode,
-                    AreaId = badgeValidationRequest.AreaIdentifier,
+                    AreaId = badgeValidationRequest.AreaId,
                     AreaName = area.Name,
-                    DateTime = badgeValidationRequest.DateTime,
-                    ScannedDateTime = badgeValidationRequest.DateTime,
+                    DateTime = badgeValidationRequest.Timestamp,
+                    ScannedDateTime = badgeValidationRequest.Timestamp,
                     Mode = badgeValidationRequest.Mode,
                     Direction = badgeValidationRequest.Direction,
                     ValidationResult = validationResult

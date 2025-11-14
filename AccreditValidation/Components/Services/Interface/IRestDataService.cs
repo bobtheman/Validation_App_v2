@@ -1,6 +1,6 @@
 ﻿namespace AccreditValidation.Components.Services.Interface
 {
-    using global::AccreditValidation.Requests.V2;
+    using global::AccreditValidation.Requests.V3;
     using global::AccreditValidation.Responses;
     using global::AccreditValidation.Models;
 
@@ -10,7 +10,6 @@
 
         Task<ValidationResultsResponse> DownloadOfflineData(bool downloadAllPhotos);
         Task<BadgeValidationResponse> ValidateRequest(BadgeValidationRequest validationRequest);
-
-        Task<BadgeValidationResponse> SyncValidationResults(IEnumerable<BadgeValidationRequest> request);
+        Task<SyncValidationResponse> SyncValidationResults(IEnumerable<BadgeValidationRequest> validationRequest);
     }
 }

@@ -83,7 +83,7 @@ namespace AccreditValidation.Components
                 if (userLoginModel.SiteName == "QATEST2024-TEST")
                 {
                     //userLoginModel.ServerUrl = ($"https://qastagingv5-api-uat.accredit-solutions.com");
-                    userLoginModel.ServerUrl = "http://6ni6ksptdo.loclx.io";
+                    userLoginModel.ServerUrl = "http://gasla62hoo.loclx.io";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);

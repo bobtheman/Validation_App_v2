@@ -60,5 +60,34 @@
                 new LanguageModel { LanguageName = this["German"], LanguageCode = ConstantsName.DE }
             };
         }
+
+        public async Task<string> SetLocalizedValidationResultName(string? validationResultName)
+        {
+            if (string.IsNullOrWhiteSpace(validationResultName))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var localized = this[validationResultName];
+
+                if (string.IsNullOrEmpty(localized))
+                {
+                    return string.Empty;
+                }
+
+                if (!string.Equals(localized, validationResultName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Empty;
+                }
+
+                return localized;
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@
 {
     using global::AccreditValidation.Components.Services.Interface;
     using global::AccreditValidation.Models;
-    using global::AccreditValidation.Requests.V2;
+    using global::AccreditValidation.Requests.V3;
     using global::AccreditValidation.Responses;
     using RestSharp;
     using System.Collections.Generic;
@@ -12,11 +12,14 @@
     using System.Text.Json;
     using static global::AccreditValidation.Shared.Constants.ConstantsName;
 
+
     public class RestDataService : IRestDataService
     {
         private readonly HttpClient _httpClient;
         private readonly IFileService _fileService;
         private HttpResponseMessage responseMessage = new HttpResponseMessage();
+        BadgeValidationResponse badgeValidationResponse = new BadgeValidationResponse();
+        SyncValidationResponse syncValidationResponse = new SyncValidationResponse();
 
         public RestDataService(IFileService fileService)
         {
@@ -66,7 +69,7 @@
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.ValidationResults}");
+                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}?page=1&pageSize=500");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -102,9 +105,9 @@
                                         continue;
                                     }
 
-                                    if (downloadAllPhotos)
+                                    if (downloadAllPhotos && !string.IsNullOrEmpty(badgeData.Photo?.Id))
                                     {
-                                        badgeData.Photo = await _fileService.GetImageBaseString(badgeData.PhotoUrl);
+                                        badgeData.Photo.PhotoUrl = await _fileService.GetImageBaseString(badgeData.Photo.Id);
                                         badgeData.PhotoDownloaded = true;
                                     }
 
@@ -160,9 +163,6 @@
 
         public async Task<BadgeValidationResponse> ValidateRequest(BadgeValidationRequest validationRequest)
         {
-
-            BadgeValidationResponse badgeValidationResponse = new BadgeValidationResponse();
-
             if (string.IsNullOrEmpty(await SecureStorage.GetAsync(SecureStorageServerUrl)))
             {
                 return badgeValidationResponse;
@@ -170,32 +170,16 @@
 
             try
             {
-                var temp = await SecureStorage.GetAsync(SecureStorageServerUrl);
-                var temp2 = Endpoints.Validation;
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                var clientOptions = new RestClientOptions(await SecureStorage.GetAsync(SecureStorageServerUrl));
-                var client = new RestClient(clientOptions);
-                var request = new RestRequest(Endpoints.Validation, Method.Post);
-                request.AddHeader(Headers.ContentType, MimeTypes.ApplicationJson);
-                request.AddHeader(Headers.Authorization, $"{Headers.Bearer} {await SecureStorage.GetAsync(SecureStorageToken)}");
+                var jsonContent = JsonSerializer.Serialize(validationRequest);
+                var content = new StringContent(jsonContent, Encoding.UTF8, MimeTypes.ApplicationJson);
 
-                request.AddStringBody(JsonSerializer.Serialize(validationRequest), DataFormat.Json);
+                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}", content);
 
-                string jsonBody = JsonSerializer.Serialize(validationRequest);
-                var headersList = new List<string>();
-                foreach (var p in request.Parameters)
+                if (responseMessage.IsSuccessStatusCode)
                 {
-                    if (p.Type == ParameterType.HttpHeader)
-                    {
-                        headersList.Add($"{p.Name}: {p.Value}");
-                    }
-                }
-
-                RestResponse response = await client.ExecuteAsync(request);
-
-                if (response.IsSuccessful)
-                {
-                    string jsonString = response.Content;
+                    string jsonString = await responseMessage.Content.ReadAsStringAsync();
                     var options = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
@@ -212,19 +196,17 @@
             }
         }
 
-        public async Task<BadgeValidationResponse> SyncValidationResults(IEnumerable<BadgeValidationRequest> request)
+        public async Task<SyncValidationResponse> SyncValidationResults(IEnumerable<BadgeValidationRequest> validationRequest)
         {
-            var badgeValidationResponse = new BadgeValidationResponse();
-
+           
             try
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                var jsonContent = JsonSerializer.Serialize(request);
-
+                var jsonContent = JsonSerializer.Serialize(validationRequest);
                 var content = new StringContent(jsonContent, Encoding.UTF8, MimeTypes.ApplicationJson);
 
-                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.ValidationResults}", content);
+                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}", content);
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -235,7 +217,7 @@
                         PropertyNameCaseInsensitive = true
                     };
 
-                    badgeValidationResponse = JsonSerializer.Deserialize<BadgeValidationResponse>(jsonString, options);
+                    syncValidationResponse = JsonSerializer.Deserialize<SyncValidationResponse>(jsonString, options) ?? new SyncValidationResponse();
                 }
             }
             catch (Exception ex)
@@ -247,7 +229,7 @@
                 }
             }
 
-            return badgeValidationResponse;
+            return syncValidationResponse;
         }
     }
 }

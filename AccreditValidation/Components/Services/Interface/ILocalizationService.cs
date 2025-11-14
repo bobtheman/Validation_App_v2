@@ -15,5 +15,7 @@
         string GetDefaultLanguageCode();
 
         List<LanguageModel> GetLanguageList();
+
+        Task<string> SetLocalizedValidationResultName(string? validationResultName);
     }
 }

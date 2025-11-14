@@ -1,5 +1,5 @@
 ﻿using AccreditValidation.Models;
-using AccreditValidation.Requests.V2;
+using AccreditValidation.Requests.V3;
 using AccreditValidation.Responses;
 using SQLite;
 
@@ -7,8 +7,6 @@ namespace AccreditValidation.Components.Services.Interface
 {
     public interface IOfflineDataService
     {
-        SQLiteAsyncConnection GetConnection();
-        Task EnsureDatabaseCreatedAsync();
         Task InitializeAsync();
         Task SetOfflineAreaAsync();
         Task SetLocalValidationResultAsync(ValidationResultsResponse validationResultsResponse);

@@ -77,6 +77,17 @@
             // Audio Service
             builder.Services.AddSingleton(AudioManager.Current);
 
+            //builder.Services.AddSingleton<IOfflineDataService>(sp =>
+            //{
+            //    var restDataService = sp.GetRequiredService<IRestDataService>();
+            //    var offlineDataService = new OfflineDataService(restDataService);
+
+            //    // Initialize the database synchronously during app startup
+            //    offlineDataService.InitializeAsync().GetAwaiter().GetResult();
+
+            //    return offlineDataService;
+            //});
+
             // Optional: Uncomment if needed
             // builder.Services.AddSingleton<IFileService, FileService>();
             // builder.Services.AddSingleton<IConnectivityChecker, ConnectivityChecker>();

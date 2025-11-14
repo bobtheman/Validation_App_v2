@@ -3,7 +3,7 @@ namespace AccreditValidation.Components.Pages
     using AccreditValidation.Components.Services.Interface;
     using AccreditValidation.Helper.Interface;
     using AccreditValidation.Models;
-    using AccreditValidation.Requests.V2;
+    using AccreditValidation.Requests.V3;
     using AccreditValidation.Responses;
     using AccreditValidation.Shared.Constants;
     using AccreditValidation.Shared.Services.AlertService;
@@ -164,8 +164,8 @@ namespace AccreditValidation.Components.Pages
             }
 
             badgeValidationRequest.Barcode = barcode;
-            badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
-            badgeValidationRequest.DateTime = DateTime.Now;
+            badgeValidationRequest.AreaId = selectedAreaIdentifier;
+            badgeValidationRequest.Timestamp = DateTime.Now;
 
             if (selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString())
             {
@@ -299,7 +299,7 @@ namespace AccreditValidation.Components.Pages
                 response = await OfflineDataService.ValidateRequestOffline(badgeValidationRequest);
             }
 
-            if (response != null && response.ValidationResultName != ConstantsName.Success && response.Badge != null)
+            if (response != null && response.Result != ConstantsName.Success && response.Badge != null)
             {
                 SetDangerBackground();
                 await SetResults(response);
@@ -314,7 +314,7 @@ namespace AccreditValidation.Components.Pages
                 SubTypeName = LocalizationService["InvalidBarcode"];
                 Name = LocalizationService["BadgeNotFound"];
                 Direction = $"{LocalizationService["Direction"]} : {DirectionList.FirstOrDefault(d => d.IsSelected)?.Direction ?? string.Empty}";
-                ValidationResultName = SetLocalizedValidationResultName(response?.ValidationResultName);
+                ValidationResultName = await LocalizationService.SetLocalizedValidationResultName(response?.Result);
                 ShowResult = true;
                 ShowFilter = true;
                 StateHasChanged();
@@ -329,21 +329,14 @@ namespace AccreditValidation.Components.Pages
         {
             ShowResult = true;
 
-            if (!string.IsNullOrEmpty(response.Badge.Photo))
+            if (!string.IsNullOrEmpty(response?.Badge.ContactImage?.FileName) && response?.Badge.ContactImage?.Base64EncodedImage != null)
             {
-                PhotoUrl = response.Badge.Photo;
+                PhotoUrl = response?.Badge.ContactImage.Base64EncodedImage.ToString();
             }
 
-            if (!string.IsNullOrEmpty(response.Badge.PhotoUrl) && string.IsNullOrEmpty(PhotoUrl) && response.Badge.PhotoDownloaded)
+            if (!string.IsNullOrEmpty(response?.Badge.PhotoUrl))
             {
-                try
-                {
-                    PhotoUrl =  await FileService.GetImageBaseString(response.Badge.PhotoUrl);
-                }
-                catch (Exception ex)
-                {
-                    await AlertService.ShowErrorAlertAsync(LocalizationService["AnErrorOccured"], LocalizationService["PleaseTryAgain"]);
-                }
+                PhotoUrl = response?.Badge.PhotoUrl;
             }
 
             if (!string.IsNullOrEmpty(PhotoUrl))
@@ -355,38 +348,11 @@ namespace AccreditValidation.Components.Pages
             SubTypeName = response.Badge?.RegistrationSubTypeName ?? string.Empty;
             Name = $"{response.Badge?.Forename} {response.Badge?.Surname}" ?? string.Empty;
             Direction = $"{LocalizationService["Direction"]} : {DirectionList.FirstOrDefault(d => d.IsSelected)?.Direction ?? string.Empty}";
-            ValidationResultName = SetLocalizedValidationResultName(response.ValidationResultName);
+            ValidationResultName = await LocalizationService.SetLocalizedValidationResultName(response.Result);
             StateHasChanged();
         }
 
-        private string SetLocalizedValidationResultName(string? validationResultName)
-        {
-            if (string.IsNullOrWhiteSpace(validationResultName))
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                var localized = LocalizationService[validationResultName];
-
-                if (string.IsNullOrEmpty(localized))
-                {
-                    return string.Empty;
-                }
-
-                if (string.Equals(localized, validationResultName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return string.Empty;
-                }
-
-                return localized;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
+        
 
         private void ResetFrom()
         {

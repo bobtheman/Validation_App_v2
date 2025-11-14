@@ -65,9 +65,11 @@
         #region Endpoints   
         public static class Endpoints
         {
-            public static string Validation = "/api/v2/badge/Validation";
-            public static string Areas = "/api/v2/badge/Areas";
-            public static string ValidationResults = "/api/v2/badge/validationResults";
+            public static string Validation = "/api/v3/accessControl";
+            public static string Areas = "/api/v3/accessControl/areas";
+            public static string File = "/api/v3/file/";
+            public static string FileThumbnail = "/thumbnail";
+            public static string ValidationResults = "/api/v3/accessControl/validationResults";
         }
         #endregion
 

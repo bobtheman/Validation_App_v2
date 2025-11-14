@@ -543,4 +543,10 @@
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
   </data>
+  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
+    <value>Alle Daten inklusive Fotos herunterladen?</value>
+  </data>
+  <data name="FingerprintError" xml:space="preserve">
+    <value>Fingerabdruckfehler</value>
+  </data>
 </root>

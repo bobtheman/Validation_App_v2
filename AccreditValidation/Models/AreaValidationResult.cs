@@ -8,8 +8,8 @@
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        [JsonPropertyName("AreaId")]
-        public string? AreaIdentifier { get; set; }
+        [JsonPropertyName("AreaIdentifier")]
+        public string? AreaId { get; set; }
 
         [JsonPropertyName("ValidationResult")]
         public int ValidationResult { get; set; }

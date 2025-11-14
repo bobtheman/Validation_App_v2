@@ -2,6 +2,7 @@
 {
     using global::AccreditValidation.Components.Services.Interface;
     using System.Net.Http.Headers;
+    using static global::AccreditValidation.Shared.Constants.ConstantsName;
 
     public class FileService : IFileService
     {
@@ -12,7 +13,7 @@
             _connectivityChecker = connectivityChecker;
         }
 
-        public async Task<string> GetImageBaseString(string fileName)
+        public async Task<string> GetImageBaseString(string photoId)
         {
             if(!_connectivityChecker.ConnectivityCheck())
             {
@@ -22,9 +23,9 @@
             var token = await SecureStorage.GetAsync("token");
             var serverUrl = await SecureStorage.GetAsync("serverUrl");
 
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(serverUrl) || string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(serverUrl) || string.IsNullOrEmpty(photoId))
             {
-                Console.WriteLine("Missing token, serverUrl, or fileName.");
+                Console.WriteLine("Missing token, serverUrl, or photoId.");
                 return string.Empty;
             }
 
@@ -33,7 +34,7 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var imageUrl = $"{serverUrl}/{fileName}";
+                var imageUrl = $"{serverUrl}{Endpoints.File}{photoId}{Endpoints.FileThumbnail}";
                 var imageBytes = await client.GetByteArrayAsync(imageUrl);
                 var base64String = Convert.ToBase64String(imageBytes);
                 return $"data:image/jpeg;base64,{base64String}";

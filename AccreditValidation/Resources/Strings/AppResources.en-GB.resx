@@ -177,11 +177,11 @@
   <data name="ConfirmDeleteScanTitle" xml:space="preserve">
     <value>Delete Scan</value>
   </data>
+  <data name="ConfirmDownloadDataMessage" xml:space="preserve">
+    <value>Download all data including photos?</value>
+  </data>
   <data name="ConfirmDownloadDataMessageWithoutPhotos" xml:space="preserve">
     <value>Download all data excluding photos?</value>
-  </data>
-  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
-    <value>Download all data including photos?</value>
   </data>
   <data name="ConfirmLogout" xml:space="preserve">
     <value>Confirm Logout</value>
@@ -263,9 +263,6 @@
   </data>
   <data name="FilterByBarcode" xml:space="preserve">
     <value>Filter by barcode</value>
-  </data>
-  <data name="FingerprintError" xml:space="preserve">
-    <value>Fingerprint Error</value>
   </data>
   <data name="FingerprintErrorUnknown" xml:space="preserve">
     <value>Fingerprint Error Unknown</value>
@@ -545,5 +542,11 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
+    <value>Download all data including photos?</value>
+  </data>
+  <data name="FingerprintError" xml:space="preserve">
+    <value>Fingerprint Error</value>
   </data>
 </root>
