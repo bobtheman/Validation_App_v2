@@ -62,11 +62,41 @@
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    await SetIsAuthenticatedAsync(true);
-                    return JsonSerializer.Deserialize<TokenResponse>(jsonString, new JsonSerializerOptions
+
+                    if (string.IsNullOrWhiteSpace(jsonString))
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
+                        Debug.WriteLine("Received empty response from authentication endpoint");
+                        await SetIsAuthenticatedAsync(false);
+                        await Logout();
+                        return new TokenResponse();
+                    }
+
+                    try
+                    {
+                        var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonString, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                        if (tokenResponse is null)
+                        {
+                            Debug.WriteLine("Failed to deserialize token response - result was null");
+                            await SetIsAuthenticatedAsync(false);
+                            await Logout();
+                            return new TokenResponse();
+                        }
+
+                        await SetIsAuthenticatedAsync(true);
+                        return tokenResponse;
+                    }
+                    catch (JsonException jsonEx)
+                    {
+                        Debug.WriteLine($"JSON Deserialization Error: {jsonEx.Message}");
+                        Debug.WriteLine($"Response content: {jsonString}");
+                        await SetIsAuthenticatedAsync(false);
+                        await Logout();
+                        return new TokenResponse();
+                    }
                 }
 
                 await SetIsAuthenticatedAsync(false);
