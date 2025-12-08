@@ -35,7 +35,7 @@
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Areas}");
+                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(ServerUrl)}{Endpoints.Areas}");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -69,7 +69,7 @@
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Headers.Bearer, await SecureStorage.GetAsync(SecureStorageToken));
 
-                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}?page=1&pageSize=500");
+                responseMessage = await _httpClient.GetAsync($"{await SecureStorage.GetAsync(ServerUrl)}{Endpoints.Validation}?page=1&pageSize=500");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -163,7 +163,7 @@
 
         public async Task<BadgeValidationResponse> ValidateRequest(BadgeValidationRequest validationRequest)
         {
-            if (string.IsNullOrEmpty(await SecureStorage.GetAsync(SecureStorageServerUrl)))
+            if (string.IsNullOrEmpty(await SecureStorage.GetAsync(ServerUrl)))
             {
                 return badgeValidationResponse;
             }
@@ -175,7 +175,7 @@
                 var jsonContent = JsonSerializer.Serialize(validationRequest);
                 var content = new StringContent(jsonContent, Encoding.UTF8, MimeTypes.ApplicationJson);
 
-                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}", content);
+                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(ServerUrl)}{Endpoints.Validation}", content);
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -206,7 +206,7 @@
                 var jsonContent = JsonSerializer.Serialize(validationRequest);
                 var content = new StringContent(jsonContent, Encoding.UTF8, MimeTypes.ApplicationJson);
 
-                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(SecureStorageServerUrl)}{Endpoints.Validation}", content);
+                responseMessage = await _httpClient.PostAsync($"{await SecureStorage.GetAsync(ServerUrl)}{Endpoints.Validation}", content);
 
                 if (responseMessage.IsSuccessStatusCode)
                 {

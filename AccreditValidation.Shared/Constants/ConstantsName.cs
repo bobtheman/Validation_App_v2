@@ -89,9 +89,9 @@
         }
         #endregion
 
-        #region SecureStorage
+        #region Server
         public static string SecureStorageToken = "token";
-        public static string SecureStorageServerUrl = "serverUrl";
+        public static string ServerUrl = "serverUrl";
         #endregion
 
         #region default image

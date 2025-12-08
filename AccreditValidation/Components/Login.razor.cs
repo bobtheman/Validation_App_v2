@@ -74,16 +74,16 @@ namespace AccreditValidation.Components
                 }
 
                 //Todo - remove, local testing
-                userLoginModel.SiteName = "QATEST2024-TEST";
-                userLoginModel.Username = "martinapi";
+                userLoginModel.SiteName = "QATEST2024";
+                userLoginModel.Username = "EASApiUser";
                 userLoginModel.Password = "EAS!dsaq123ew";
                 userLoginModel.RememberMe = true;
                 userLoginModel.SelectedLanguageCode = await SecureStorage.GetAsync("selectedLanguageCode") ?? "en-GB";
 
-                if (userLoginModel.SiteName == "QATEST2024-TEST")
+                if (userLoginModel.SiteName == "QATEST2024")
                 {
-                    //userLoginModel.ServerUrl = ($"https://qastagingv5-api-uat.accredit-solutions.com");
-                    userLoginModel.ServerUrl = "http://gasla62hoo.loclx.io";
+                    userLoginModel.ServerUrl = "http://m2k9q37w8l.loclx.io";
+                    userLoginModel.TokenEndpointUrl = "http://rzcb1brgjr.loclx.io" + "/token";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);

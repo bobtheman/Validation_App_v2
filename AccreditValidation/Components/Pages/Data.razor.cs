@@ -82,7 +82,7 @@ namespace AccreditValidation.Components.Pages
                     AreaId = x.AreaId
                 }));
 
-                if (result == null || result.HttpStatusCode != (int)HttpStatusCode.OK)
+                if (result == null)
                 {
                     AppState.ShowSpinner = false;
                     await ShowAlert(LocalizationService["Error"], LocalizationService["SyncDataFailed"], ConstantsName.Failure);

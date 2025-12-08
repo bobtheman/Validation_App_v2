@@ -14,15 +14,8 @@
         [JsonPropertyName("Description")]
         public string? Description { get; set; }
 
-
         [JsonPropertyName("Status")]
         public bool Status { get; set; }
-
-        [JsonPropertyName("LastUpdated")]
-        public DateTime LastUpdated { get; set; }
-
-        [JsonPropertyName("CreatedDate")]
-        public DateTime CreatedDate { get; set; }
 
         [JsonPropertyName("Identifier")]
         public string? Identifier { get; set; }

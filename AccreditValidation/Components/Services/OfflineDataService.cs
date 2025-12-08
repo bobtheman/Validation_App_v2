@@ -237,7 +237,6 @@
         #region table actions
         public async Task<List<Area>> GetAllAreasAsync()
         {
-            var test = db.Table<Area>().ToListAsync();
             return await db.Table<Area>().ToListAsync();
         }
 

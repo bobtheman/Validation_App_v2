@@ -10,6 +10,8 @@ namespace AccreditValidation.Shared.Models.Authentication
 
         public string? SiteName { get; set; } = string.Empty;
 
+        public string? TokenEndpointUrl { get; set; } = string.Empty;
+
         public string? ServerUrl { get; set; } = string.Empty;
 
         public string? SelectedLanguageCode { get; set; } = ConstantsName.EN;
