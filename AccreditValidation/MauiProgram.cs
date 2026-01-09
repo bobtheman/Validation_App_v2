@@ -54,6 +54,7 @@
 
             // Core Services
             builder.Services.AddSingleton<IAppState, AppState>();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAlertService, AlertService>();
             builder.Services.AddScoped<IAreaService, AreaService>();

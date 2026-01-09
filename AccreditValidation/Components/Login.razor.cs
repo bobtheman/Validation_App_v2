@@ -18,7 +18,7 @@ namespace AccreditValidation.Components
 
         protected ErrorModel error = new ErrorModel();
 
-        private List<LanguageModel> LanguageList { get; set; } = new List<LanguageModel>();
+        private List<LanguageModel> LanguageList { get; set; } = [];
 
         protected string SelectedLanguageCode { get; set; } = "en-GB";
         [Inject] private IAppState AppState { get; set; }
@@ -44,9 +44,10 @@ namespace AccreditValidation.Components
                     await ProcessBiometricLogin();
                 }
 
-                await CheckSecureStorage();
+                var loginHandled = await CheckSecureStorage();
 
-                if (AuthService != null && await AuthService.GetIsAuthenticatedAsync())
+                // Only check authentication if login wasn't already handled
+                if (!loginHandled && AuthService != null && await AuthService.GetIsAuthenticatedAsync())
                 {
                     HandleLoginAsync();
                 }
@@ -58,6 +59,8 @@ namespace AccreditValidation.Components
             catch (Exception ex)
             {
                 error.ErrorMessage = $"Initialization failed: {ex.Message}";
+                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], error.ErrorMessage);
+                AppState.ShowSpinner = false;
             }
         }
 
@@ -67,23 +70,26 @@ namespace AccreditValidation.Components
 
             try
             {
-                if (!ValidateLoginFields())
+                if (!await ValidateLoginFieldsAsync())
                 {
                     AppState.ShowSpinner = false;
                     return;
                 }
 
+                // Ensure language code has a default
+                userLoginModel.SelectedLanguageCode ??= "en-GB";
+
+#if DEBUG
                 //Todo - remove, local testing
-                userLoginModel.SiteName = "QATEST2024-TEST";
-                userLoginModel.Username = "admin";
+                userLoginModel.SiteName = "QASTAGINGV5-TEST";
+                userLoginModel.Username = "qastagingapi";
                 userLoginModel.Password = "EAS!dsaq123ew";
                 userLoginModel.RememberMe = true;
-                userLoginModel.SelectedLanguageCode = await SecureStorage.GetAsync("selectedLanguageCode") ?? "en-GB";
+#endif
 
-                if (userLoginModel.SiteName == "QATEST2024-TEST")
+                if (userLoginModel.SiteName == "QASTAGINGV5-TEST")
                 {
-                    //userLoginModel.ServerUrl = ($"https://qastagingv5-api-uat.accredit-solutions.com");
-                    userLoginModel.ServerUrl = "http://fukavyk4ds.loclx.io";
+                    userLoginModel.ServerUrl = "http://7dilj0bhtg.loclx.io";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);
@@ -109,36 +115,36 @@ namespace AccreditValidation.Components
             }
         }
 
-        private bool ValidateLoginFields()
+        private async Task<bool> ValidateLoginFieldsAsync()
         {
             if (string.IsNullOrWhiteSpace(userLoginModel.SiteName))
             {
-                AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["SiteNameRequired"]);
+                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["SiteNameRequired"]);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(userLoginModel.Username))
             {
-                AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["UsernameRequired"]);
+                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["UsernameRequired"]);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(userLoginModel.Password))
             {
-                AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["PasswordRequired"]);
+                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["PasswordRequired"]);
                 return false;
             }
 
             if (string.IsNullOrEmpty(userLoginModel.ServerUrl))
             {
-                userLoginModel.ServerUrl = ($"https://{userLoginModel.SiteName}{ConstantsName.BaseUrl}");
-                userLoginModel.PhotoUrl = ($"https://{userLoginModel.SiteName}{ConstantsName.PhotoUrl}");
+                userLoginModel.ServerUrl = $"https://{userLoginModel.SiteName}{ConstantsName.BaseUrl}";
+                userLoginModel.PhotoUrl = $"https://{userLoginModel.SiteName}{ConstantsName.PhotoUrl}";
             }
 
             return true;
         }
 
-        private async Task CheckSecureStorage()
+        private async Task<bool> CheckSecureStorage()
         {
             userLoginModel.Username = await SecureStorage.GetAsync("username");
             userLoginModel.Password = await SecureStorage.GetAsync("password");
@@ -148,7 +154,9 @@ namespace AccreditValidation.Components
             if (userLoginModel.RememberMe)
             {
                 await HandleLoginAsync();
+                return true;
             }
+            return false;
         }
 
         private async Task SetSiteParameters(UserLoginModel userLoginModel, string accessToken)
@@ -167,11 +175,11 @@ namespace AccreditValidation.Components
             }
             else
             {
-                SecureStorage.Remove("rememberMe");
-                SecureStorage.Remove("username");
-                SecureStorage.Remove("password");
-                SecureStorage.Remove("siteName");
-                SecureStorage.Remove("selectedLanguageCode");
+                var keysToRemove = new[] { "rememberMe", "username", "password", "siteName", "selectedLanguageCode" };
+                foreach (var key in keysToRemove)
+                {
+                    SecureStorage.Remove(key);
+                }
             }
         }
 

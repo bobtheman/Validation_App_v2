@@ -4,16 +4,17 @@
     using global::AccreditValidation.Shared.Models.Authentication;
     using Microsoft.Maui.Storage;
     using System.Diagnostics;
+    using System.Net.Http;
     using System.Text.Json;
 
     public class AuthService : IAuthService
     {
         private const string AuthenticatedKey = "IsAuthenticated";
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public AuthService()
+        public AuthService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = new HttpClient();
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<bool> GetIsAuthenticatedAsync()
@@ -38,8 +39,8 @@
             if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
             {
                 Debug.WriteLine(Connectivity.Current.NetworkAccess.ToString());
-                Logout();
-                return null;
+                await Logout();
+                return new TokenResponse();
             }
 
             try
@@ -47,66 +48,40 @@
                 var formData = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("grant_type", "password"),
-                    new KeyValuePair<string, string>("username", userLoginModel.Username),
-                    new KeyValuePair<string, string>("password", userLoginModel.Password)
+                    new KeyValuePair<string, string>("username", userLoginModel.Username ?? string.Empty),
+                    new KeyValuePair<string, string>("password", userLoginModel.Password ?? string.Empty)
                 });
 
-                using var client = new HttpClient
-                {
-                    BaseAddress = new Uri(userLoginModel.ServerUrl),
-                    Timeout = Timeout.InfiniteTimeSpan
-                };
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri(userLoginModel.ServerUrl!);
+                client.Timeout = TimeSpan.FromSeconds(30); // Use reasonable timeout instead of infinite
 
                 var response = await client.PostAsync("/token", formData);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var json = await response.Content.ReadAsStringAsync();
+                    var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(json);
 
-                    if (string.IsNullOrWhiteSpace(jsonString))
+                    if (tokenResponse?.AccessToken is null)
                     {
-                        Debug.WriteLine("Received empty response from authentication endpoint");
+                        Debug.WriteLine("Failed to deserialize token response or missing access token");
                         await SetIsAuthenticatedAsync(false);
-                        await Logout();
                         return new TokenResponse();
                     }
 
-                    try
-                    {
-                        var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonString, new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
-                        if (tokenResponse is null)
-                        {
-                            Debug.WriteLine("Failed to deserialize token response - result was null");
-                            await SetIsAuthenticatedAsync(false);
-                            await Logout();
-                            return new TokenResponse();
-                        }
-
-                        await SetIsAuthenticatedAsync(true);
-                        return tokenResponse;
-                    }
-                    catch (JsonException jsonEx)
-                    {
-                        Debug.WriteLine($"JSON Deserialization Error: {jsonEx.Message}");
-                        Debug.WriteLine($"Response content: {jsonString}");
-                        await SetIsAuthenticatedAsync(false);
-                        await Logout();
-                        return new TokenResponse();
-                    }
+                    await SetIsAuthenticatedAsync(true);
+                    return tokenResponse;
                 }
 
+                Debug.WriteLine($"Authentication failed with status: {response.StatusCode}");
                 await SetIsAuthenticatedAsync(false);
-                await Logout();
                 return new TokenResponse();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error: {ex.Message}");
-                await Logout();
+                await SetIsAuthenticatedAsync(false);
             }
             return new TokenResponse();
         }
