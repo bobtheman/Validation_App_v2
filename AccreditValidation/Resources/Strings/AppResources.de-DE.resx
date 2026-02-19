@@ -561,4 +561,7 @@
   <data name="NfcNotAvailable" xml:space="preserve">
     <value>NFC nicht verfügbar</value>
   </data>
+  <data name="NfcReady" xml:space="preserve">
+    <value>NFC-bereit</value>
+  </data>
 </root>
