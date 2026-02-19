@@ -15,8 +15,10 @@ namespace AccreditValidation.Components.Pages
     using System.Globalization;
     using System.Threading.Tasks;
 
-    public partial class Validation
+    public partial class Validation : IDisposable
     {
+        // ── Injected services ─────────────────────────────────────────────────
+
         [Inject] IAppState AppState { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Inject] private IAuthService AuthService { get; set; }
@@ -31,6 +33,14 @@ namespace AccreditValidation.Components.Pages
         [Inject] private IRestDataService RestDataService { get; set; }
         [Inject] private IOfflineDataService OfflineDataService { get; set; }
         [Inject] private IFileService FileService { get; set; }
+
+        /// <summary>
+        /// Injected NFC service. Registered as a singleton in MauiProgram.cs.
+        /// </summary>
+        [Inject] private INfcService NfcService { get; set; }
+
+        // ── State ─────────────────────────────────────────────────────────────
+
         private List<Area> AreaList { get; set; } = new();
         private List<ValidationDirection> DirectionList { get; set; } = new();
         private string SelectedDirectionCode { get; set; } = Enums.ValidationDirection.In.ToString();
@@ -50,18 +60,24 @@ namespace AccreditValidation.Components.Pages
         private bool UseDeviceCameraView = false;
         private string StatusMessage { get; set; } = string.Empty;
         private string BarcodeData { get; set; } = string.Empty;
-        // Add a backing field for controlling the display of the validation image div
         private bool ShowValidationImageDiv { get; set; } = false;
         private BadgeValidationRequest badgeValidationRequest = new BadgeValidationRequest();
         private ElementReference validation_holder_container;
         private string CustomBackgroundClass = string.Empty;
         private bool isFirstRender = true;
 
+        // NFC state
+        private bool IsNfcAvailable { get; set; } = false;
+        private bool IsNfcListening { get; set; } = false;
+
+        // ── Lifecycle ─────────────────────────────────────────────────────────
+
         protected override async Task OnInitializedAsync()
         {
             AppState.CustomBackgroundClass = ConstantsName.BGCustomDefault;
             AppState.SelectedPage = LocalizationService["Validation"];
             AppState.ShowSpinner = true;
+
             var currentCulture = LocalizationService.GetCulture();
             CultureInfo.DefaultThreadCurrentCulture = currentCulture;
             CultureInfo.DefaultThreadCurrentUICulture = currentCulture;
@@ -72,6 +88,9 @@ namespace AccreditValidation.Components.Pages
             DirectionList = await GetDirectionsList();
 
             AlertService.RegisterRefreshCallback(StateHasChanged);
+
+            IsNfcAvailable = NfcService.IsAvailable && NfcService.IsEnabled;
+
             AppState.ShowSpinner = false;
         }
 
@@ -93,13 +112,90 @@ namespace AccreditValidation.Components.Pages
             }
         }
 
+        // ── NFC ───────────────────────────────────────────────────────────────
+        private void ToggleNfcListening()
+        {
+            if (IsNfcListening)
+            {
+                StopNfc();
+            }
+            else
+            {
+                StartNfc();
+            }
+        }
+
+        private void StartNfc()
+        {
+            if (!NfcService.IsAvailable || !NfcService.IsEnabled)
+            {
+                StatusMessage = LocalizationService["NfcNotAvailable"];
+                StateHasChanged();
+                return;
+            }
+
+            NfcService.TagRead -= OnNfcTagRead;
+            NfcService.TagError -= OnNfcTagError;
+            NfcService.TagRead += OnNfcTagRead;
+            NfcService.TagError += OnNfcTagError;
+
+            NfcService.StartListening();
+            IsNfcListening = true;
+            StatusMessage = LocalizationService["NfcReady"];
+            StateHasChanged();
+        }
+
+        private void StopNfc()
+        {
+            NfcService.TagRead -= OnNfcTagRead;
+            NfcService.TagError -= OnNfcTagError;
+            NfcService.StopListening();
+            IsNfcListening = false;
+            StatusMessage = string.Empty;
+            StateHasChanged();
+        }
+
+        private async void OnNfcTagRead(object? sender, string payload)
+        {
+            StopNfc();
+
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await ValidateEntry(payload);
+                StateHasChanged();
+            });
+        }
+
+        private async void OnNfcTagError(object? sender, string error)
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                if (error.Contains("disabled"))
+                {
+#if ANDROID
+                    var intent = new Android.Content.Intent(
+                        Android.Provider.Settings.ActionNfcSettings);
+                    Android.App.Application.Context.StartActivity(intent);
+#endif
+                }
+                else
+                {
+                    await AlertService.ShowErrorAlertAsync(
+                        LocalizationService["NfcError"], error);
+                }
+                StateHasChanged();
+            });
+        }
+
+        // ── Area / direction helpers ──────────────────────────────────────────
+
         private async Task<List<Area>> GetAreaList()
         {
             try
             {
                 return await AreaService.GetAreaList(AppState.SelectedAreaIdentifier);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new List<Area>();
             }
@@ -107,7 +203,7 @@ namespace AccreditValidation.Components.Pages
 
         private async Task<List<ValidationDirection>> GetDirectionsList()
         {
-            return await DirectionService.GetValidationDirectionList(SelectedDirectionCode); 
+            return await DirectionService.GetValidationDirectionList(SelectedDirectionCode);
         }
 
         private async void ToggleFilter()
@@ -131,7 +227,7 @@ namespace AccreditValidation.Components.Pages
             OrganisationName = SubTypeName = Name = PhotoUrl = StatusMessage = string.Empty;
         }
 
-        #region Entry Validation
+        // ── Entry Validation ──────────────────────────────────────────────────
 
         private async Task ValidateEntry(string barcode)
         {
@@ -140,7 +236,8 @@ namespace AccreditValidation.Components.Pages
             ResetFrom();
 
             if (string.IsNullOrWhiteSpace(barcode))
-            { 
+            {
+                AppState.ShowSpinner = false;
                 return;
             }
 
@@ -150,49 +247,43 @@ namespace AccreditValidation.Components.Pages
             }
 
             var selectedAreaIdentifier = AreaList.FirstOrDefault(a => a.IsSelected)?.Identifier ?? string.Empty;
-
             var selectedDirectionIdentifier = DirectionList.FirstOrDefault(d => d.IsSelected)?.Identifier ?? string.Empty;
 
             if (string.IsNullOrEmpty(selectedAreaIdentifier))
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["InvalidArea"], LocalizationService["PleaseEnteraValidArea"]);
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["InvalidArea"],
+                    LocalizationService["PleaseEnteraValidArea"]);
             }
 
             if (string.IsNullOrEmpty(selectedDirectionIdentifier))
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["InvalidDirection"], LocalizationService["PleaseEnteraValidDirection"]);
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["InvalidDirection"],
+                    LocalizationService["PleaseEnteraValidDirection"]);
             }
 
             badgeValidationRequest.Barcode = barcode;
             badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
             badgeValidationRequest.DateTime = DateTime.Now;
-
-            if (selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString())
-            {
-                badgeValidationRequest.Direction = Enums.ValidationDirection.In;
-            }
-            else
-            {
-                badgeValidationRequest.Direction = Enums.ValidationDirection.Out;
-            }
+            badgeValidationRequest.Direction = selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString()
+                ? Enums.ValidationDirection.In
+                : Enums.ValidationDirection.Out;
 
             await ProcessRequest(badgeValidationRequest);
-            AppState.ShowSpinner = false;
-            return;
-        }
-        #endregion
 
-        #region dropdowns
+            AppState.ShowSpinner = false;
+        }
+
+        // ── Dropdowns ─────────────────────────────────────────────────────────
+
         private void OnAreaChanged(ChangeEventArgs e)
         {
             var selectedIdentifier = e?.Value?.ToString() ?? string.Empty;
-
             AppState.SelectedAreaIdentifier = selectedIdentifier;
 
             foreach (var area in AreaList)
-            {
                 area.IsSelected = area.Identifier == selectedIdentifier;
-            }
 
             StateHasChanged();
         }
@@ -200,27 +291,18 @@ namespace AccreditValidation.Components.Pages
         private void OnSelectedDirectionChanged(ChangeEventArgs e)
         {
             var selectedIdentifier = e?.Value?.ToString() ?? string.Empty;
-
             AppState.SelectedDirectionIdentifier = selectedIdentifier;
 
             foreach (var direction in DirectionList)
-            {
                 direction.IsSelected = direction.Identifier == selectedIdentifier;
-            }
 
             StateHasChanged();
         }
-        #endregion
 
-        #region Honeywell Scanner
+        // ── Honeywell Scanner ─────────────────────────────────────────────────
 
         private async void MBarcodeReader_BarcodeDataReady(object sender, BarcodeDataArgs e)
         {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                await MainThread.InvokeOnMainThreadAsync(() => UpdateDetailItemWithScannedValue(e.Data));
-            }
-
             if (MSoftOneShotScanStarted)
             {
                 await MSelectedReader.SoftwareTriggerAsync(false);
@@ -257,24 +339,26 @@ namespace AccreditValidation.Components.Pages
                 await ValidateEntry(trimmed);
             }
         }
-        #endregion
 
-        #region Device Camera (MAUI)
+        // ── Device Camera (MAUI) ──────────────────────────────────────────────
+
         private async Task OpenNativeCameraPage()
         {
             try
             {
-                var barcodeData = await Application.Current.MainPage.ShowPopupAsync(new Xaml.DeviceCamera(AudioManager));
+                var barcodeData = await Application.Current.MainPage.ShowPopupAsync(
+                    new Xaml.DeviceCamera(AudioManager));
 
                 if (string.IsNullOrEmpty(barcodeData?.ToString()))
                 {
-                    await AlertService.ShowErrorAlertAsync(LocalizationService["BadgeNotFound"], LocalizationService["NoBarcodeDetected"]);
+                    await AlertService.ShowErrorAlertAsync(
+                        LocalizationService["BadgeNotFound"],
+                        LocalizationService["NoBarcodeDetected"]);
                     StateHasChanged();
                     return;
                 }
 
                 await ValidateEntry(barcodeData.ToString());
-
                 StateHasChanged();
             }
             catch (Exception ex)
@@ -283,21 +367,16 @@ namespace AccreditValidation.Components.Pages
             }
         }
 
-        #endregion
+        // ── Validation response processing ────────────────────────────────────
 
-        #region Validation
         private async Task ProcessRequest(BadgeValidationRequest badgeValidationRequest)
         {
             var response = new BadgeValidationResponse();
 
             if (ConnectivityChecker.ConnectivityCheck())
-            {
                 response = await RestDataService.ValidateRequest(badgeValidationRequest);
-            }
             else
-            {
                 response = await OfflineDataService.ValidateRequestOffline(badgeValidationRequest);
-            }
 
             if (response != null && response.ValidationResultName != ConstantsName.Success && response.Badge != null)
             {
@@ -330,55 +409,49 @@ namespace AccreditValidation.Components.Pages
             ShowResult = true;
 
             if (!string.IsNullOrEmpty(response.Badge.Photo))
-            {
                 PhotoUrl = response.Badge.Photo;
-            }
 
-            if (!string.IsNullOrEmpty(response.Badge.PhotoUrl) && string.IsNullOrEmpty(PhotoUrl) && response.Badge.PhotoDownloaded)
+            if (!string.IsNullOrEmpty(response.Badge.PhotoUrl) &&
+                string.IsNullOrEmpty(PhotoUrl) &&
+                response.Badge.PhotoDownloaded)
             {
                 try
                 {
-                    PhotoUrl =  await FileService.GetImageBaseString(response.Badge.PhotoUrl);
+                    PhotoUrl = await FileService.GetImageBaseString(response.Badge.PhotoUrl);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    await AlertService.ShowErrorAlertAsync(LocalizationService["AnErrorOccured"], LocalizationService["PleaseTryAgain"]);
+                    await AlertService.ShowErrorAlertAsync(
+                        LocalizationService["AnErrorOccured"],
+                        LocalizationService["PleaseTryAgain"]);
                 }
             }
 
-            if (!string.IsNullOrEmpty(PhotoUrl))
-            {
-                ShowValidationImageDiv = true;
-            }
+            ShowValidationImageDiv = !string.IsNullOrEmpty(PhotoUrl);
 
             OrganisationName = response.Badge?.ResponsibleOrganisationName ?? string.Empty;
             SubTypeName = response.Badge?.RegistrationSubTypeName ?? string.Empty;
-            Name = $"{response.Badge?.Forename} {response.Badge?.Surname}" ?? string.Empty;
+            Name = $"{response.Badge?.Forename} {response.Badge?.Surname}";
             Direction = $"{LocalizationService["Direction"]} : {DirectionList.FirstOrDefault(d => d.IsSelected)?.Direction ?? string.Empty}";
             ValidationResultName = SetLocalizedValidationResultName(response.ValidationResultName);
+
             StateHasChanged();
         }
 
         private string SetLocalizedValidationResultName(string? validationResultName)
         {
             if (string.IsNullOrWhiteSpace(validationResultName))
-            {
                 return string.Empty;
-            }
 
             try
             {
                 var localized = LocalizationService[validationResultName];
 
                 if (string.IsNullOrEmpty(localized))
-                {
                     return string.Empty;
-                }
 
                 if (string.Equals(localized, validationResultName, StringComparison.OrdinalIgnoreCase))
-                {
                     return string.Empty;
-                }
 
                 return localized;
             }
@@ -399,44 +472,32 @@ namespace AccreditValidation.Components.Pages
             StateHasChanged();
         }
 
-        #endregion
-        #region Success and Error Handling
-        private void SetSuccessBackground()
-        {
-            AppState.CustomBackgroundClass = ConstantsName.BGCustomSuccess;
-        }
+        // ── Background helpers ────────────────────────────────────────────────
 
-        private void SetDangerBackground()
-        {
-            AppState.CustomBackgroundClass = ConstantsName.BGCustomDanger;
-        }
-
-        private void ClearBackground()
-        {
-            AppState.CustomBackgroundClass = ConstantsName.BGCustomDefault;
-        }
-
-        private void ClearBarcodeData()
-        {
-            BarcodeData = string.Empty;
-        }
+        private void SetSuccessBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomSuccess;
+        private void SetDangerBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomDanger;
+        private void ClearBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomDefault;
+        private void ClearBarcodeData() => BarcodeData = string.Empty;
 
         private async Task<bool> CheckManualInputOption()
         {
             var manualInputValue = await SecureStorage.GetAsync("selectedInputOptionCode");
 
             if (string.IsNullOrEmpty(manualInputValue))
-            {
                 return false;
-            }
 
-            if (manualInputValue == ConstantsName.ShowManualInputCode)
-            {
-                return true;
-            }
-
-            return false;
+            return manualInputValue == ConstantsName.ShowManualInputCode;
         }
-        #endregion
+
+        // ── IDisposable ───────────────────────────────────────────────────────
+
+        public void Dispose()
+        {
+            // Ensure NFC and scanner are stopped when the page is torn down.
+            if (IsNfcListening)
+                StopNfc();
+
+            CloseBarcodeScanner();
+        }
     }
 }

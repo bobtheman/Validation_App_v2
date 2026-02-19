@@ -1,7 +1,9 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
+using Plugin.NFC;
 
 namespace AccreditValidation
 {
@@ -15,6 +17,7 @@ namespace AccreditValidation
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            CrossNFC.Init(this);   
             EnableImmersiveMode();
 
             // Make the activity fullscreen and draw behind the status bar
@@ -27,11 +30,23 @@ namespace AccreditValidation
             }
             else
             {
-#pragma warning disable CS0618 // Suppress obsolete warning for older Android support
+#pragma warning disable CS0618
                 Window.AddFlags(WindowManagerFlags.LayoutNoLimits);
                 Window.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
 #pragma warning restore CS0618
             }
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            CrossNFC.OnResume();        // ← starts foreground dispatch for NFC
+        }
+
+        protected override void OnNewIntent(Intent intent)
+        {
+            base.OnNewIntent(intent);
+            CrossNFC.OnNewIntent(intent); // ← forwards tag intents to the plugin
         }
 
         public override void OnWindowFocusChanged(bool hasFocus)
@@ -53,12 +68,6 @@ namespace AccreditValidation
                 SystemUiFlags.LayoutStable
             );
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
         }
     }
 }

@@ -19,7 +19,7 @@ namespace AccreditValidation.Resources.Strings {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class AppResources {
@@ -61,11 +61,47 @@ namespace AccreditValidation.Resources.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dummy.
+        ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string Dummy {
+        internal static string NfcError {
             get {
-                return ResourceManager.GetString("Dummy", resourceCulture);
+                return ResourceManager.GetString("NfcError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NfcNotAvailable {
+            get {
+                return ResourceManager.GetString("NfcNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NfcReady {
+            get {
+                return ResourceManager.GetString("NfcReady", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NfcScan {
+            get {
+                return ResourceManager.GetString("NfcScan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NfcStopListening {
+            get {
+                return ResourceManager.GetString("NfcStopListening", resourceCulture);
             }
         }
     }

@@ -46,6 +46,14 @@
     <key>NSFaceIDUsageDescription</key>
     <string>We use Face ID to log you in securely.</string>
 
+    <!-- NFC Permission -->
+    <key>NFCReaderUsageDescription</key>
+    <string>This app uses NFC to scan badge tags for validation.</string>
+    <key>com.apple.developer.nfc.readersession.formats</key>
+    <array>
+      <string>NDEF</string>
+    </array>
+
     <!-- Orientation Support -->
     <key>UISupportedInterfaceOrientations</key>
     <array>

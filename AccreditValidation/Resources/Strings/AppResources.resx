@@ -117,7 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Dummy" xml:space="preserve">
-    <value>Dummy</value>
+  <data name="NfcStopListening" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NfcScan" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NfcError" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NfcNotAvailable" xml:space="preserve">
+    <value />
+  </data>
+  <data name="NfcReady" xml:space="preserve">
+    <value />
   </data>
 </root>

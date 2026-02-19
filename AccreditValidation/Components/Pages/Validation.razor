@@ -35,6 +35,7 @@
 
         <!-- Filter section toggled -->
         <div id="filter_holder_div" style="display:@(ShowFilter ? "block" : "none")">
+
             <!-- Area dropdown -->
             <select class="validation-picker" @onchange="OnAreaChanged"
                     disabled="@(AreaList == null || AreaList.Count == 0)"
@@ -60,7 +61,7 @@
                 @LocalizationService["Direction"]
             </h2>
 
-            <!-- Full-width direction dropdown without side-by-side icon -->
+            <!-- Direction dropdown -->
             <select class="validation-picker" @onchange="OnSelectedDirectionChanged"
                     style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 1rem;">
                 @foreach (var direction in DirectionList)
@@ -72,6 +73,7 @@
                 }
             </select>
 
+            <!-- Manual barcode input -->
             @if (UseManualInput)
             {
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
@@ -93,13 +95,50 @@
                 </div>
             }
 
+            <!-- Camera scan button (non-Honeywell devices) -->
             @if (UseDeviceCameraView)
             {
-                <button class="btn btn-outline-primary w-100" @onclick="OpenNativeCameraPage" type="submit">@LocalizationService["Scan"]</button>
+                <button class="btn btn-outline-primary w-100" style="margin-bottom: 0.5rem;"
+                        @onclick="OpenNativeCameraPage" type="button">
+                    <i class="bi bi-camera" style="margin-right: 0.4rem;"></i>
+                    @LocalizationService["Scan"]
+                </button>
             }
 
-        </div>
+            <!-- ── NFC button ──────────────────────────────────────────────── -->
+            @if (IsNfcAvailable)
+            {
+                <button class="btn w-100 @(IsNfcListening ? "btn-warning" : "btn-outline-success")"
+                        style="margin-bottom: 0.5rem;"
+                        @onclick="ToggleNfcListening"
+                        type="button"
+                        title="@(IsNfcListening ? LocalizationService["NfcStopListening"] : LocalizationService["NfcScan"])">
+                    @if (IsNfcListening)
+                    {
+                        <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="bi bi-wifi" style="font-size: 1.25rem; animation: pulse 1s infinite;"></i>
+                            @LocalizationService["NfcStopListening"]
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="bi bi-wifi" style="font-size: 1.25rem;"></i>
+                            @LocalizationService["NfcScan"]
+                        </span>
+                    }
+                </button>
 
+                @if (IsNfcListening && !string.IsNullOrEmpty(StatusMessage))
+                {
+                    <p style="text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
+                        @StatusMessage
+                    </p>
+                }
+            }
+            <!-- ─────────────────────────────────────────────────────────────── -->
+
+        </div>
 
         <!-- Result Display -->
         @if (ShowResult)
@@ -133,3 +172,11 @@
 
     </div>
 </AuthWrapper>
+
+<style>
+    @@keyframes pulse {
+        0%   { opacity: 1; }
+        50%  { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+</style>

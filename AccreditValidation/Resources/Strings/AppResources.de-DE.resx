@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="NfcStopListening" xml:space="preserve">
+    <value>NFC Hör auf zuzuhören</value>
+  </data>
+  <data name="NfcScan" xml:space="preserve">
+    <value>NFC-Scan</value>
+  </data>
+  <data name="NfcError" xml:space="preserve">
+    <value>NFC-Fehler</value>
+  </data>
   <data name="AccreditValidation" xml:space="preserve">
     <value>Accredit Validation</value>
   </data>
@@ -542,5 +551,14 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
+  </data>
+  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
+    <value>Alle Daten inklusive Fotos herunterladen?</value>
+  </data>
+  <data name="FingerprintError" xml:space="preserve">
+    <value>Fingerabdruckfehler</value>
+  </data>
+  <data name="NfcNotAvailable" xml:space="preserve">
+    <value>NFC nicht verfügbar</value>
   </data>
 </root>

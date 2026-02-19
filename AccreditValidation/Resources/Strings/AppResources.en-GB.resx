@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="NfcStopListening" xml:space="preserve">
+    <value>Nfc Stop Listening</value>
+  </data>
+  <data name="NfcScan" xml:space="preserve">
+    <value>Nfc Scan</value>
+  </data>
+  <data name="NfcError" xml:space="preserve">
+    <value>Nfc Error</value>
+  </data>
   <data name="AccreditValidation" xml:space="preserve">
     <value>Accredit Validation</value>
   </data>
@@ -177,11 +186,11 @@
   <data name="ConfirmDeleteScanTitle" xml:space="preserve">
     <value>Delete Scan</value>
   </data>
+  <data name="ConfirmDownloadDataMessage" xml:space="preserve">
+    <value>Download all data including photos?</value>
+  </data>
   <data name="ConfirmDownloadDataMessageWithoutPhotos" xml:space="preserve">
     <value>Download all data excluding photos?</value>
-  </data>
-  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
-    <value>Download all data including photos?</value>
   </data>
   <data name="ConfirmLogout" xml:space="preserve">
     <value>Confirm Logout</value>
@@ -263,9 +272,6 @@
   </data>
   <data name="FilterByBarcode" xml:space="preserve">
     <value>Filter by barcode</value>
-  </data>
-  <data name="FingerprintError" xml:space="preserve">
-    <value>Fingerprint Error</value>
   </data>
   <data name="FingerprintErrorUnknown" xml:space="preserve">
     <value>Fingerprint Error Unknown</value>
@@ -545,5 +551,17 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="ConfirmDownloadDataMessageWithPhotos" xml:space="preserve">
+    <value>Download all data including photos?</value>
+  </data>
+  <data name="FingerprintError" xml:space="preserve">
+    <value>Fingerprint Error</value>
+  </data>
+  <data name="NfcNotAvailable" xml:space="preserve">
+    <value>Nfc Not Available</value>
+  </data>
+  <data name="NfcReady" xml:space="preserve">
+    <value>Nfc Ready</value>
   </data>
 </root>

@@ -68,6 +68,7 @@
             builder.Services.AddSingleton<IDevicePlaformHelper, DevicePlaformHelper>();
             builder.Services.AddSingleton<IScannerCodeHelper, ScannerCodeHelper>();
             builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSingleton<INfcService, NfcService>();
 
             // Notification Service - UPDATED for SignalR support
             builder.Services.AddSingleton<INotificationService, NotificationService>();

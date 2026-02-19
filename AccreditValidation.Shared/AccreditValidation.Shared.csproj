@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Plugin.MAUI.NFC" Version="0.1.27" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="_Microsoft.Android.Resource.Designer">
       <HintPath>..\AccreditValidation\obj\Debug\net9.0-android\_Microsoft.Android.Resource.Designer.dll</HintPath>
     </Reference>
