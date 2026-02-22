@@ -5,217 +5,212 @@
 <AuthWrapper>
     <div class="settings-container @AppState.CustomBackgroundClass" id="data_holder_container" @ref="data_holder_container">
 
-        <div class="card shadow-sm rounded-3 p-4 mb-4 border-0 bg-light">
-            <div class="info-row d-flex justify-content-between">
-                <span>@LocalizationService["TotalScans"]:</span>
-                <span>@AppState.TotalScans</span>
+        <!-- ── Stats card ──────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <div class="info-row">
+                <span class="info-label">@LocalizationService["TotalScans"]</span>
+                <span class="info-value">@AppState.TotalScans</span>
             </div>
+            <div class="row-divider"></div>
 
-            <div class="info-row d-flex justify-content-between">
-                <span>@LocalizationService["TotalOfflineRecords"]:</span>
-                <span>@AppState.TotalOfflineRecords</span>
+            <div class="info-row">
+                <span class="info-label">@LocalizationService["TotalOfflineRecords"]</span>
+                <span class="info-value">@AppState.TotalOfflineRecords</span>
             </div>
+            <div class="row-divider"></div>
 
-            <div class="info-row d-flex justify-content-between">
-                <span>@LocalizationService["LastOfflineSync"]:</span>
-                <span>@AppState.LastOfflineSync</span>
+            <div class="info-row">
+                <span class="info-label">@LocalizationService["LastOfflineSync"]</span>
+                <span class="info-value info-value--muted">@AppState.LastOfflineSync</span>
             </div>
+            <div class="row-divider"></div>
 
-            <div class="info-row d-flex justify-content-between align-items-center">
-                <span>@LocalizationService["NetworkStatus"]:</span>
-                <span class="network-status-row d-flex align-items-center">
-                    <span class=@($"status-dot me-2 {(AppState.NetworkStatus == "Online" ? "status-online" : "status-offline")}")></span>
-                    <span class=@($"status-label {(AppState.NetworkStatus == "Online" ? "label-online" : "label-offline")}")>
+            <div class="info-row">
+                <span class="info-label">@LocalizationService["NetworkStatus"]</span>
+                <span class="network-status-row">
+                    <span class="status-dot @(AppState.NetworkStatus == ConstantsName.Online ? "status-dot--online" : "status-dot--offline")"></span>
+                    <span class="status-label @(AppState.NetworkStatus == ConstantsName.Online ? "status-label--online" : "status-label--offline")">
                         @AppState.NetworkStatus
                     </span>
                 </span>
             </div>
         </div>
 
-        <div class="button-group">
-            <button class="btn btn-outline-primary w-100" @onclick="SyncData">
-                <i class="bi bi-arrow-repeat me-2"></i>@LocalizationService["SyncData"]
+        <!-- ── Actions card ────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <button class="btn-link-row" @onclick="SyncData">
+                <i class="bi bi-arrow-repeat btn-link-icon"></i>
+                <span>@LocalizationService["SyncData"]</span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
             </button>
+            <div class="row-divider"></div>
 
-            <button class="btn btn-outline-primary w-100" @onclick="LoadOfflineScans">
-                <i class="bi bi-eye me-2"></i>@LocalizationService["ViewOfflineScans"]
+            <button class="btn-link-row" @onclick="LoadOfflineScans">
+                <i class="bi bi-eye btn-link-icon"></i>
+                <span>@LocalizationService["ViewOfflineScans"]</span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
             </button>
+            <div class="row-divider"></div>
 
-            <button class="btn btn-outline-danger w-100" @onclick="DeleteDatabase">
-                <i class="bi bi-trash me-2"></i>@LocalizationService["DeleteDatabase"]
+            <button class="btn-link-row" @onclick="DownloadData">
+                <i class="bi bi-download btn-link-icon"></i>
+                <span>@LocalizationService["DownloadData"]</span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
             </button>
+            <div class="row-divider"></div>
 
-            <button class="btn btn-outline-primary w-100" @onclick="DownloadData">
-                <i class="bi bi-download me-2"></i>@LocalizationService["DownloadData"]
+            <button class="btn-link-row" @onclick="ToggleNetworkMode">
+                <i class="bi @(AppState.NetworkStatus == ConstantsName.Online ? "bi-wifi-off" : "bi-wifi") btn-link-icon"></i>
+                <span>
+                    @if (AppState.NetworkStatus == ConstantsName.Online)
+                    {
+                        @LocalizationService["OfflineMode"]
+                    }
+                    else
+                    {
+                        @LocalizationService["OnlineMode"]
+                    }
+                </span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
             </button>
+            <div class="row-divider"></div>
 
-            <button class="btn btn-outline-primary w-100" @onclick="ToggleNetworkMode">
-                <i class="bi @(AppState.NetworkStatus == ConstantsName.Online ? "bi-wifi-off" : "bi-wifi") me-2"></i>
-                @if (AppState.NetworkStatus == ConstantsName.Online)
-                {
-                    @LocalizationService["OfflineMode"]
-                }
-                else
-                {
-                    @LocalizationService["OnlineMode"]
-                }
+            <button class="btn-danger-row" @onclick="DeleteDatabase">
+                <i class="bi bi-trash"></i>
+                <span>@LocalizationService["DeleteDatabase"]</span>
             </button>
         </div>
 
+        <!-- ── Confirm Delete DB Dialog ────────────────────────────────────── -->
         @if (showConfirmDeleteDatabaseDialog)
         {
-            <div class="modal-backdrop fade show"></div>
-            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">@LocalizationService["ConfirmDeleteDatabaseTitle"]</h5>
-                        </div>
-                        <div class="modal-body">
-                            <p>@LocalizationService["ConfirmDeleteDatabaseMessage"]</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary" @onclick="() => ConfirmDelete(false)">@LocalizationService["Cancel"]</button>
-                            <button class="btn btn-outline-success" @onclick="() => ConfirmDelete(true)">@LocalizationService["OK"]</button>
-                        </div>
+            <div class="modal-overlay">
+                <div class="modal-window">
+                    <h2 class="modal-title">@LocalizationService["ConfirmDeleteDatabaseTitle"]</h2>
+                    <p class="modal-message">@LocalizationService["ConfirmDeleteDatabaseMessage"]</p>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" @onclick="() => ConfirmDelete(false)">@LocalizationService["Cancel"]</button>
+                        <button class="modal-btn modal-btn-confirm" @onclick="() => ConfirmDelete(true)">@LocalizationService["OK"]</button>
                     </div>
                 </div>
             </div>
         }
 
+        <!-- ── Download Data Dialog ─────────────────────────────────────────── -->
         @if (showConfirmDownloadDataDialog)
         {
-            <div class="modal-backdrop fade show"></div>
-            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">@LocalizationService["DownloadData"]</h5>
-                        </div>
-                        <div class="modal-body d-flex flex-column gap-2">
-                            <button class="btn btn-outline-primary" @onclick="() => ConfirmDownloadData(true, false)">
-                                @LocalizationService["ConfirmDownloadDataMessageWithoutPhotos"]
-                            </button>
-                            <button class="btn btn-outline-primary" @onclick="() => ConfirmDownloadData(true, true)">
-                                @LocalizationService["ConfirmDownloadDataMessageWithPhotos"]
-                            </button>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary" @onclick="() => ConfirmDownloadData(false,false)">@LocalizationService["Cancel"]</button>
-                        </div>
+            <div class="modal-overlay">
+                <div class="modal-window">
+                    <h2 class="modal-title">@LocalizationService["DownloadData"]</h2>
+                    <div class="modal-option-group">
+                        <button class="modal-option-btn" @onclick="() => ConfirmDownloadData(true, false)">
+                            @LocalizationService["ConfirmDownloadDataMessageWithoutPhotos"]
+                        </button>
+                        <button class="modal-option-btn" @onclick="() => ConfirmDownloadData(true, true)">
+                            @LocalizationService["ConfirmDownloadDataMessageWithPhotos"]
+                        </button>
+                    </div>
+                    <div class="modal-actions" style="margin-top: 0.75rem;">
+                        <button class="modal-btn modal-btn-cancel" @onclick="() => ConfirmDownloadData(false, false)">@LocalizationService["Cancel"]</button>
                     </div>
                 </div>
             </div>
         }
 
+        <!-- ── Password Prompt Dialog ───────────────────────────────────────── -->
         @if (showPasswordPrompt)
         {
-            <div class="modal-backdrop fade show"></div>
-            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">@LocalizationService["EnterPasswordMessage"]</h5>
-                        </div>
-                        <div class="modal-body">
-                            <input type="password" class="modal-input" @bind="passwordInput" placeholder="••••••••" />
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary" @onclick="CancelPasswordPrompt">@LocalizationService["Cancel"]</button>
-                            <button class="btn btn-outline-success" @onclick="ValidatePassword">@LocalizationService["Submit"]</button>
-                        </div>
+            <div class="modal-overlay">
+                <div class="modal-window">
+                    <h2 class="modal-title">@LocalizationService["EnterPasswordMessage"]</h2>
+                    <input type="password" class="modal-input" @bind="passwordInput" placeholder="••••••••" />
+                    <div class="modal-actions" style="margin-top: 1rem;">
+                        <button class="modal-btn modal-btn-cancel" @onclick="CancelPasswordPrompt">@LocalizationService["Cancel"]</button>
+                        <button class="modal-btn modal-btn-confirm" @onclick="ValidatePassword">@LocalizationService["Submit"]</button>
                     </div>
                 </div>
             </div>
         }
 
-        @if (!string.IsNullOrEmpty(alertMessage))
-        {
-            <div class=@($"alert fixed-top mx-auto w-75 text-center {(alertType == ConstantsName.AlertSuccess ? ConstantsName.AlertTypeSuccess : ConstantsName.AlertTypeDanger)}") role="alert">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>@alertMessage</span>
-                    <button type="button" class="btn btn-outline-light btn-sm ms-3" @onclick="() => alertMessage = string.Empty">
-                        @LocalizationService["OK"]
-                    </button>
-                </div>
-            </div>
-        }
-
+        <!-- ── Offline Scans Modal ──────────────────────────────────────────── -->
         @if (showOfflineScanResultsModal)
         {
-            <div class="modal-backdrop fade show"></div>
-            <div class="modal fade show d-block" tabindex="-1" role="dialog" style="z-index: 1100;">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">@LocalizationService["OfflineScanResultsTitle"]</h5>
-                        </div>
-                        <div class="modal-body" style="max-height: 85vh; overflow: hidden;">
-                            <!-- Filter Controls -->
-                            <div class="mb-3">
-                                <input type="text" class="form-control mb-2" placeholder="@LocalizationService["FilterByBarcode"]"
-                                       @bind="barcodeFilter" @bind:event="oninput" />
+            <div class="modal-overlay">
+                <div class="modal-window modal-window--wide">
+                    <h2 class="modal-title">@LocalizationService["OfflineScanResultsTitle"]</h2>
 
-                                <select class="form-control" @bind="resultFilter">
-                                    <option value="All">@LocalizationService["AllResults"]</option>
-                                    @foreach (var result in Enum.GetValues(typeof(AccreditValidation.Enums.BadgeValidationResult)))
-                                    {
-                                        <option value="@result">@Enum.GetName(typeof(AccreditValidation.Enums.BadgeValidationResult), result)</option>
-                                    }
-                                </select>
-                            </div>
+                    <!-- Filters -->
+                    <div class="offline-filters">
+                        <input type="text" class="modal-input" style="margin-bottom: 0.5rem;"
+                               placeholder="@LocalizationService["FilterByBarcode"]"
+                               @bind="barcodeFilter" @bind:event="oninput" />
 
-                            <!-- Records Display -->
-                            <div id="offline_record_holder" style="max-height: calc(80vh - 160px); overflow-y: auto;">
-                                @if (FilteredRecords.Any())
-                                {
-                                    @foreach (var record in FilteredRecords)
-                                    {
-                                        var isSuccess = (AccreditValidation.Enums.BadgeValidationResult)record.ValidationResult
-                                        == AccreditValidation.Enums.BadgeValidationResult.Success;
-
-                                        <div class="card mb-2 p-2 @(isSuccess ? "bg-custom-success" : "bg-custom-danger")">
-                                            <div><strong>@LocalizationService["Name"]:</strong> @record.Badge?.Forename + " " +@record.Badge?.Surname</div>
-                                            <div><strong>@LocalizationService["Barcode"]:</strong> @record.Barcode</div>
-                                            <div><strong>@LocalizationService["Area"]:</strong> @record.AreaName</div>
-                                            <div>
-                                                <strong>@LocalizationService["Direction"]: </strong>
-                                                @Enum.GetName(typeof(AccreditValidation.Enums.ValidationDirection), record.Direction)
-                                            </div>
-                                            <div>
-                                                <strong>@LocalizationService["ValidationResult"]: </strong>
-                                                @Enum.GetName(typeof(AccreditValidation.Enums.BadgeValidationResult), record.ValidationResult)
-                                            </div>
-                                            <button class="btn btn-outline-danger w-100 mt-2" @onclick="() => DeleteOfflineRecord(record)">
-                                                @LocalizationService["Delete"]
-                                            </button>
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <p>@LocalizationService["NoOfflineRecords"]</p>
-                                }
-                            </div>
-                        </div>
-
-                        <!-- Modal Footer -->
-                        <div class="modal-footer">
-                            @if (FilteredRecords.Any())
+                        <select class="modal-input" @bind="resultFilter">
+                            <option value="All">@LocalizationService["AllResults"]</option>
+                            @foreach (var result in Enum.GetValues(typeof(AccreditValidation.Enums.BadgeValidationResult)))
                             {
-                                <button class="btn btn-outline-danger me-auto" @onclick="DeleteAllOfflineRecords">
-                                    @LocalizationService["DeleteAll"]
-                                </button>
+                                <option value="@result">@Enum.GetName(typeof(AccreditValidation.Enums.BadgeValidationResult), result)</option>
                             }
-                            <button class="btn btn-outline-primary" @onclick="CloseOfflineScanModal">
-                                @LocalizationService["Close"]
+                        </select>
+                    </div>
+
+                    <!-- Records -->
+                    <div class="offline-records-list" id="offline_record_holder">
+                        @if (FilteredRecords.Any())
+                        {
+                            @foreach (var record in FilteredRecords)
+                            {
+                                var isSuccess = (AccreditValidation.Enums.BadgeValidationResult)record.ValidationResult
+                                    == AccreditValidation.Enums.BadgeValidationResult.Success;
+
+                                <div class="offline-record @(isSuccess ? "offline-record--success" : "offline-record--danger")">
+                                    <div class="offline-record-row"><strong>@LocalizationService["Name"]:</strong> @record.Badge?.Forename @record.Badge?.Surname</div>
+                                    <div class="offline-record-row"><strong>@LocalizationService["Barcode"]:</strong> @record.Barcode</div>
+                                    <div class="offline-record-row"><strong>@LocalizationService["Area"]:</strong> @record.AreaName</div>
+                                    <div class="offline-record-row">
+                                        <strong>@LocalizationService["Direction"]:</strong>
+                                        @Enum.GetName(typeof(AccreditValidation.Enums.ValidationDirection), record.Direction)
+                                    </div>
+                                    <div class="offline-record-row">
+                                        <strong>@LocalizationService["ValidationResult"]:</strong>
+                                        @Enum.GetName(typeof(AccreditValidation.Enums.BadgeValidationResult), record.ValidationResult)
+                                    </div>
+                                    <button class="btn-danger-row" style="margin-top: 0.5rem; border-radius: 8px;" @onclick="() => DeleteOfflineRecord(record)">
+                                        <i class="bi bi-trash"></i>
+                                        <span>@LocalizationService["Delete"]</span>
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="offline-empty">@LocalizationService["NoOfflineRecords"]</p>
+                        }
+                    </div>
+
+                    <div class="modal-actions" style="margin-top: 1rem;">
+                        @if (FilteredRecords.Any())
+                        {
+                            <button class="modal-btn modal-btn-danger" style="margin-right: auto;" @onclick="DeleteAllOfflineRecords">
+                                @LocalizationService["DeleteAll"]
                             </button>
-                        </div>
+                        }
+                        <button class="modal-btn modal-btn-cancel" @onclick="CloseOfflineScanModal">@LocalizationService["Close"]</button>
                     </div>
                 </div>
             </div>
         }
 
-        <div class="clearfix10"></div>
+        <!-- ── Alert toast ──────────────────────────────────────────────────── -->
+        @if (!string.IsNullOrEmpty(alertMessage))
+        {
+            <div class="alert-toast @(alertType == ConstantsName.AlertSuccess ? "alert-toast--success" : "alert-toast--danger")">
+                <span>@alertMessage</span>
+                <button class="alert-close" @onclick="() => alertMessage = string.Empty">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        }
+
     </div>
 </AuthWrapper>

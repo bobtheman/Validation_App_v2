@@ -15,12 +15,13 @@ namespace AccreditValidation.Components
     public partial class Login : ComponentBase
     {
         protected UserLoginModel userLoginModel = new UserLoginModel();
-
         protected ErrorModel error = new ErrorModel();
 
         private List<LanguageModel> LanguageList { get; set; } = [];
-
         protected string SelectedLanguageCode { get; set; } = "en-GB";
+
+        // ── Injected services ─────────────────────────────────────────────────
+
         [Inject] private IAppState AppState { get; set; }
         [Inject] private IAuthService AuthService { get; set; }
         [Inject] private NavigationManager NavigationManager { get; set; }
@@ -32,28 +33,69 @@ namespace AccreditValidation.Components
 
         private bool isSiteNameVisible = false;
 
+        // ── Lifecycle ─────────────────────────────────────────────────────────
+
         protected override async Task OnInitializedAsync()
         {
             try
             {
                 AppState.ShowSpinner = true;
-                var useFingerprint = await SecureStorage.GetAsync("useFingerPrint");
 
-                if (useFingerprint == "true")
-                {
-                    await ProcessBiometricLogin();
-                }
+                var useFingerprintTask = SecureStorage.GetAsync(SecureStorageKeys.UseFingerPrint);
+                var usernameTask = SecureStorage.GetAsync(SecureStorageKeys.Username);
+                var passwordTask = SecureStorage.GetAsync(SecureStorageKeys.Password);
+                var siteNameTask = SecureStorage.GetAsync(SecureStorageKeys.SiteName);
+                var languageCodeTask = SecureStorage.GetAsync(SecureStorageKeys.SelectedLanguageCode);
+                var rememberMeTask = SecureStorage.GetAsync(SecureStorageKeys.RememberMe);
+                var isAuthenticatedTask = AuthService.GetIsAuthenticatedAsync();
 
-                var loginHandled = await CheckSecureStorage();
+                await Task.WhenAll(
+                    useFingerprintTask,
+                    usernameTask,
+                    passwordTask,
+                    siteNameTask,
+                    languageCodeTask,
+                    rememberMeTask,
+                    (Task)isAuthenticatedTask);
 
-                // Only check authentication if login wasn't already handled
-                if (!loginHandled && AuthService != null && await AuthService.GetIsAuthenticatedAsync())
-                {
-                    HandleLoginAsync();
-                }
+                var useFingerprint = useFingerprintTask.Result == "true";
+                var username = usernameTask.Result;
+                var password = passwordTask.Result;
+                var siteName = siteNameTask.Result;
+                var languageCode = languageCodeTask.Result;
+                var rememberMe = rememberMeTask.Result == "true";
+                var isAuthenticated = isAuthenticatedTask.Result;
 
-                LanguageList = GetLanguageList();
                 AlertService.RegisterRefreshCallback(StateHasChanged);
+                LanguageList = GetLanguageList();
+
+                if (useFingerprint)
+                {
+                    var biometricHandled = await ProcessBiometricLogin(
+                        username, password, siteName, languageCode, rememberMe);
+
+                    if (biometricHandled)
+                    {
+                        AppState.ShowSpinner = false;
+                        return;
+                    }
+                }
+
+                // ── Remember-me auto-login
+                if (rememberMe)
+                {
+                    PopulateModelFromStorage(username, password, siteName, languageCode, rememberMe);
+                    await HandleLoginAsync();
+                    AppState.ShowSpinner = false;
+                    return;
+                }
+
+                // ── Fallback: session was already authenticated (e.g. app resumed)
+                if (isAuthenticated)
+                {
+                    await HandleLoginAsync();
+                }
+
                 AppState.ShowSpinner = false;
             }
             catch (Exception ex)
@@ -63,6 +105,8 @@ namespace AccreditValidation.Components
                 AppState.ShowSpinner = false;
             }
         }
+
+        // ── Login ─────────────────────────────────────────────────────────────
 
         private async Task HandleLoginAsync()
         {
@@ -76,28 +120,28 @@ namespace AccreditValidation.Components
                     return;
                 }
 
-                // Ensure language code has a default
                 userLoginModel.SelectedLanguageCode ??= "en-GB";
 
 #if DEBUG
-                //Todo - remove, local testing
-                userLoginModel.SiteName = "QASTAGINGV5-TEST";
+                userLoginModel.SiteName = "QATEST2024";
                 userLoginModel.Username = "qastagingapi";
                 userLoginModel.Password = "EAS!dsaq123ew";
                 userLoginModel.RememberMe = true;
 #endif
 
-                if (userLoginModel.SiteName == "QASTAGINGV5-TEST")
+                if (userLoginModel.SiteName == "QATEST2024")
                 {
-                    userLoginModel.ServerUrl = "http://vk5x8cqusr.loclx.io";
+                    //userLoginModel.ServerUrl = "http://ym3qvlcho4.loclx.io";
+                    userLoginModel.ServerUrl = "https://qatest2024-api.accredit-solutions.com";
                 }
 
                 var tokenResponse = await AuthService.AuthenticateUserAsync(userLoginModel);
 
                 if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
                 {
-
-                    await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["LoginFailedMessage"]);
+                    await AlertService.ShowErrorAlertAsync(
+                        LocalizationService["Error"],
+                        LocalizationService["LoginFailedMessage"]);
                     AppState.ShowSpinner = false;
                     return;
                 }
@@ -110,28 +154,38 @@ namespace AccreditValidation.Components
             }
             catch (Exception ex)
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["LoginFailedMessage"]);
-                AppState.ShowSpinner = false; ;
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["Error"],
+                    LocalizationService["LoginFailedMessage"]);
+                AppState.ShowSpinner = false;
             }
         }
+
+        // ── Validation ────────────────────────────────────────────────────────
 
         private async Task<bool> ValidateLoginFieldsAsync()
         {
             if (string.IsNullOrWhiteSpace(userLoginModel.SiteName))
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["SiteNameRequired"]);
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["Error"],
+                    LocalizationService["SiteNameRequired"]);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(userLoginModel.Username))
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["UsernameRequired"]);
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["Error"],
+                    LocalizationService["UsernameRequired"]);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(userLoginModel.Password))
             {
-                await AlertService.ShowErrorAlertAsync(LocalizationService["Error"], LocalizationService["PasswordRequired"]);
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["Error"],
+                    LocalizationService["PasswordRequired"]);
                 return false;
             }
 
@@ -144,70 +198,60 @@ namespace AccreditValidation.Components
             return true;
         }
 
-        private async Task<bool> CheckSecureStorage()
+        // ── SecureStorage write ───────────────────────────────────────────────
+
+        private async Task SetSiteParameters(UserLoginModel model, string accessToken)
         {
-            userLoginModel.Username = await SecureStorage.GetAsync("username");
-            userLoginModel.Password = await SecureStorage.GetAsync("password");
-            userLoginModel.SiteName = await SecureStorage.GetAsync("siteName");
-            userLoginModel.SelectedLanguageCode = await SecureStorage.GetAsync("selectedLanguageCode");
-            userLoginModel.RememberMe = (await SecureStorage.GetAsync("rememberMe")) == "true";
-            if (userLoginModel.RememberMe)
+            // Always save credentials if fingerprint is enabled — biometric needs them on next launch
+            var saveCredentials = model.RememberMe ||
+                                  await SecureStorage.GetAsync(SecureStorageKeys.UseFingerPrint) == "true";
+
+            if (saveCredentials)
             {
-                await HandleLoginAsync();
-                return true;
-            }
-            return false;
-        }
+                await Task.WhenAll(
+                    SecureStorage.SetAsync(SecureStorageKeys.Token, accessToken),
+                    SecureStorage.SetAsync(SecureStorageKeys.ServerUrl, model.ServerUrl),
+                    SecureStorage.SetAsync(SecureStorageKeys.Username, model.Username),
+                    SecureStorage.SetAsync(SecureStorageKeys.Password, model.Password),
+                    SecureStorage.SetAsync(SecureStorageKeys.SiteName, model.SiteName),
+                    SecureStorage.SetAsync(SecureStorageKeys.SelectedLanguageCode, model.SelectedLanguageCode)
+                );
 
-        private async Task SetSiteParameters(UserLoginModel userLoginModel, string accessToken)
-        {
-
-            await SecureStorage.SetAsync("token", accessToken);
-            await SecureStorage.SetAsync("serverUrl", userLoginModel.ServerUrl);
-
-            if (userLoginModel.RememberMe)
-            {
-                await SecureStorage.SetAsync("username", userLoginModel.Username);
-                await SecureStorage.SetAsync("password", userLoginModel.Password);
-                await SecureStorage.SetAsync("siteName", userLoginModel.SiteName);
-                await SecureStorage.SetAsync("selectedLanguageCode", userLoginModel.SelectedLanguageCode);
-                await SecureStorage.SetAsync("rememberMe", "true");
+                if (model.RememberMe)
+                    await SecureStorage.SetAsync(SecureStorageKeys.RememberMe, "true");
             }
             else
             {
-                var keysToRemove = new[] { "rememberMe", "username", "password", "siteName", "selectedLanguageCode" };
-                foreach (var key in keysToRemove)
-                {
-                    SecureStorage.Remove(key);
-                }
+                // No RememberMe and no fingerprint — save only what's needed for this session
+                await Task.WhenAll(
+                    SecureStorage.SetAsync(SecureStorageKeys.Token, accessToken),
+                    SecureStorage.SetAsync(SecureStorageKeys.ServerUrl, model.ServerUrl)
+                );
+
+                SecureStorage.Remove(SecureStorageKeys.RememberMe);
+                SecureStorage.Remove(SecureStorageKeys.Username);
+                SecureStorage.Remove(SecureStorageKeys.Password);
+                SecureStorage.Remove(SecureStorageKeys.SiteName);
+                SecureStorage.Remove(SecureStorageKeys.SelectedLanguageCode);
             }
         }
 
-        private async Task ProcessBiometricLogin()
+        // ── Biometric login ───────────────────────────────────────────────────
+        private async Task<bool> ProcessBiometricLogin(
+            string? username,
+            string? password,
+            string? siteName,
+            string? languageCode,
+            bool rememberMe)
         {
             try
             {
-                var useFingerprint = await SecureStorage.GetAsync("useFingerPrint");
-
-                if (useFingerprint == "false")
-                {
-                    return;
-                }
-
-                var username = await SecureStorage.GetAsync("username");
-                var password = await SecureStorage.GetAsync("password");
-                var siteName = await SecureStorage.GetAsync("siteName");
-                var selectedLanguageCode = await SecureStorage.GetAsync("selectedLanguageCode");
-                var rememberMeValue = await SecureStorage.GetAsync("rememberMe");
-                var rememberMe = rememberMeValue == null ? "false" : rememberMeValue;
-
+                // Require saved credentials — biometric is independent of RememberMe
                 if (string.IsNullOrEmpty(username) ||
                     string.IsNullOrEmpty(password) ||
-                    string.IsNullOrEmpty(siteName) ||
-                    string.IsNullOrEmpty(rememberMe) ||
-                    rememberMe == "false")
+                    string.IsNullOrEmpty(siteName))
                 {
-                    return;
+                    return false;
                 }
 
                 var request = new AuthenticationRequestConfiguration(
@@ -217,22 +261,34 @@ namespace AccreditValidation.Components
 
                 var result = await Fingerprint.AuthenticateAsync(request);
 
-                if (result.Authenticated)
-                {
-                    userLoginModel.Username = username;
-                    userLoginModel.Password = password;
-                    userLoginModel.SiteName = siteName;
-                    userLoginModel.SelectedLanguageCode = selectedLanguageCode ?? LocalizationService.GetDefaultLanguageCode();
-                    userLoginModel.RememberMe = true;
+                if (!result.Authenticated)
+                    return false;
 
-                    await HandleLoginAsync();
-                    return;
-                }
+                PopulateModelFromStorage(username, password, siteName, languageCode, rememberMe);
+                await HandleLoginAsync();
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Biometric Login] Error: {ex.Message}");
+                return false;
             }
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+
+        private void PopulateModelFromStorage(
+            string? username,
+            string? password,
+            string? siteName,
+            string? languageCode,
+            bool rememberMe)
+        {
+            userLoginModel.Username = username;
+            userLoginModel.Password = password;
+            userLoginModel.SiteName = siteName;
+            userLoginModel.SelectedLanguageCode = languageCode ?? LocalizationService.GetDefaultLanguageCode();
+            userLoginModel.RememberMe = rememberMe;
         }
 
         private List<LanguageModel> GetLanguageList()
@@ -243,9 +299,7 @@ namespace AccreditValidation.Components
             {
                 language.IsSelected = language.LanguageCode == LocalizationService.GetCulture().Name;
                 if (language.IsSelected)
-                {
                     SelectedLanguageCode = language.LanguageCode ?? LocalizationService.GetDefaultLanguageCode();
-                }
             }
 
             return languages;

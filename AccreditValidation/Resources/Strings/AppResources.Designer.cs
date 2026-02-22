@@ -104,5 +104,14 @@ namespace AccreditValidation.Resources.Strings {
                 return ResourceManager.GetString("NfcStopListening", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string UseNfc {
+            get {
+                return ResourceManager.GetString("UseNfc", resourceCulture);
+            }
+        }
     }
 }

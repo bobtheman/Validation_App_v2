@@ -1,4 +1,4 @@
-﻿namespace AccreditValidation.Components.Services
+namespace AccreditValidation.Components.Services
 {
     using global::AccreditValidation.Components.Services.Interface;
     using global::AccreditValidation.Models;
@@ -12,20 +12,24 @@
     public class OfflineDataService : IOfflineDataService
     {
         private const string DbName = "OfflineDatabase.db3";
-        private readonly string dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
-        private SQLiteAsyncConnection db;
+
+        private readonly string _dbPath;
         private readonly IRestDataService _restDataService;
+
+        private SQLiteAsyncConnection _db;
 
         public OfflineDataService(IRestDataService restDataService)
         {
             _restDataService = restDataService;
-            dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
-            db = new SQLiteAsyncConnection(dbPath);
+            _dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
+            _db = new SQLiteAsyncConnection(_dbPath);
         }
+
+        // ── Initialisation ────────────────────────────────────────────────────
 
         public async Task InitializeAsync()
         {
-            if (db == null)
+            if (_db == null)
             {
                 Debug.WriteLine("[InitializeAsync] SQLite connection is null. Aborting initialization.");
                 return;
@@ -35,23 +39,17 @@
             {
                 Debug.WriteLine("[InitializeAsync] Starting initialization...");
 
-                // Check if DB file exists
-                bool dbExists = File.Exists(dbPath);
-
-                if (dbExists)
+                if (File.Exists(_dbPath))
                 {
                     Debug.WriteLine("[InitializeAsync] Database exists. Dropping existing tables...");
-
-                    // Drop all tables
-                    await db.ExecuteAsync("DROP TABLE IF EXISTS Badge");
-                    await db.ExecuteAsync("DROP TABLE IF EXISTS Area");
-                    await db.ExecuteAsync("DROP TABLE IF EXISTS AreaValidationResult");
-                    await db.ExecuteAsync("DROP TABLE IF EXISTS OfflineScanData");
-
+                    await _db.ExecuteAsync("DROP TABLE IF EXISTS Badge");
+                    await _db.ExecuteAsync("DROP TABLE IF EXISTS Area");
+                    await _db.ExecuteAsync("DROP TABLE IF EXISTS AreaValidationResult");
+                    await _db.ExecuteAsync("DROP TABLE IF EXISTS OfflineScanData");
                     Debug.WriteLine("[InitializeAsync] All tables dropped.");
                 }
 
-                // Create tables (fresh)
+                // Re-create all tables fresh
                 await SafeCreateTableAsync<Badge>();
                 await SafeCreateTableAsync<Area>();
                 await SafeCreateTableAsync<AreaValidationResult>();
@@ -59,7 +57,7 @@
 
                 Debug.WriteLine("[InitializeAsync] Tables recreated successfully.");
             }
-            catch (SQLite.SQLiteException sqliteEx)
+            catch (SQLiteException sqliteEx)
             {
                 Debug.WriteLine("[InitializeAsync] SQLite error during initialization: " + sqliteEx.Message);
             }
@@ -73,15 +71,11 @@
             }
         }
 
-        public SQLiteAsyncConnection GetConnection()
-        {
-            throw new NotImplementedException();
-        }
+        public SQLiteAsyncConnection GetConnection() => throw new NotImplementedException();
 
-        public Task EnsureDatabaseCreatedAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public Task EnsureDatabaseCreatedAsync() => throw new NotImplementedException();
+
+        // ── Sync from REST ────────────────────────────────────────────────────
 
         public async Task SetOfflineAreaAsync()
         {
@@ -89,20 +83,18 @@
             {
                 var result = await _restDataService.GetAreaAsync();
 
-                if (!result.Any())
+                if (result == null || !result.Any())
                 {
                     Debug.WriteLine("No areas found in the response.");
                     return;
                 }
 
-                foreach (var area in result)
-                {
-                    await db.InsertAsync(area);
-                }
+                // Bulk insert is significantly faster than one-by-one InsertAsync
+                await _db.InsertAllAsync(result);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error Code:" + ex.Message);
+                Debug.WriteLine("Error Code: " + ex.Message);
             }
         }
 
@@ -110,36 +102,37 @@
         {
             try
             {
-                if (results?.Data == null)
-                {
+                if (results?.Data == null || results.Data.Length == 0)
                     return;
-                }
 
-                for (int i = 0; i < results.TotalRecords; i++)
+                var badges = new List<Badge>(results.Data.Length);
+                var areaValidations = new List<AreaValidationResult>();
+
+                // Bug fix: use Data.Length — TotalRecords comes from the API metadata
+                // and may differ from the actual number of items in the Data array.
+                foreach (var validationData in results.Data)
                 {
-                    var validationData = results.Data[i];
-
                     if (validationData?.Badge != null)
-                    {
-                        await db.InsertAsync(validationData.Badge);
-                    }
+                        badges.Add(validationData.Badge);
 
                     if (validationData?.AreaValidationResults != null)
-                    {
-                        for (int j = 0; j < validationData.AreaValidationResults.Count(); j++)
-                        {
-                            var areaValidation = validationData.AreaValidationResults[j];
-                            await db.InsertAsync(areaValidation);
-                        }
-                    }
+                        areaValidations.AddRange(validationData.AreaValidationResults);
                 }
+
+                // Bulk insert both collections in a single pass each
+                if (badges.Count > 0)
+                    await _db.InsertAllAsync(badges);
+
+                if (areaValidations.Count > 0)
+                    await _db.InsertAllAsync(areaValidations);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine("[SetLocalValidationResultAsync] Error: " + ex.Message);
             }
         }
 
+        // ── Offline validation ────────────────────────────────────────────────
 
         public async Task<BadgeValidationResponse> ValidateRequestOffline(BadgeValidationRequest badgeValidationRequest)
         {
@@ -147,47 +140,36 @@
 
             try
             {
-                if (badgeValidationRequest == null || db == null)
-                {
-                    badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
-                    return badgeValidationResponse;
-                }
+                if (badgeValidationRequest == null || _db == null)
+                    return NotFound(badgeValidationResponse);
 
                 if (string.IsNullOrWhiteSpace(badgeValidationRequest.Barcode))
-                {
-                    badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
-                    return badgeValidationResponse;
-                }
+                    return NotFound(badgeValidationResponse);
 
                 if (string.IsNullOrWhiteSpace(badgeValidationRequest.AreaIdentifier))
-                {
-                    badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
-                    return badgeValidationResponse;
-                }
+                    return NotFound(badgeValidationResponse);
 
                 var badges = await GetAllBadgeAsync();
                 var badge = badges?.FirstOrDefault(b => b.Barcode == badgeValidationRequest.Barcode);
 
                 if (badge == null)
-                {
-                    badgeValidationResponse.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                    badgeValidationResponse.ValidationResultName = ConstantsName.BadgeNotFound;
-                    return badgeValidationResponse;
-                }
+                    return NotFound(badgeValidationResponse);
 
                 var areaValidationResults = await GetAllAreaValidationResultAsync();
-                var successfulAreaValidationResult = areaValidationResults?
-                    .FirstOrDefault(avr => avr.AreaIdentifier == badgeValidationRequest.AreaIdentifier && avr.Barcode == badgeValidationRequest.Barcode);
+                var matchedResult = areaValidationResults?.FirstOrDefault(
+                    avr => avr.AreaIdentifier == badgeValidationRequest.AreaIdentifier
+                        && avr.Barcode == badgeValidationRequest.Barcode);
 
-                badgeValidationResponse.ValidationResult = successfulAreaValidationResult != null
-                ? (long)successfulAreaValidationResult.ValidationResult
+                badgeValidationResponse.ValidationResult = matchedResult != null
+                    ? (long)matchedResult.ValidationResult
                     : Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
-                badgeValidationResponse.ValidationResultName = successfulAreaValidationResult?.ValidationResultName ?? ConstantsName.BadgeNotFound;
 
-                await UpdateOfflineScanDataAsync(badgeValidationRequest, (int)(successfulAreaValidationResult?.ValidationResult ?? Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound)));
+                badgeValidationResponse.ValidationResultName = matchedResult?.ValidationResultName
+                    ?? ConstantsName.BadgeNotFound;
+
+                await UpdateOfflineScanDataAsync(
+                    badgeValidationRequest,
+                    (int)(matchedResult?.ValidationResult ?? Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound)));
 
                 badgeValidationResponse.Badge = badge;
 
@@ -195,23 +177,26 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine("[ValidateRequestOffline] Error: " + ex.Message);
                 return badgeValidationResponse;
             }
         }
+
+        // ── Database management ───────────────────────────────────────────────
 
         public async Task DeleteOfflineDatabaseAsync()
         {
             try
             {
-                if (db != null)
+                if (_db != null)
                 {
-                    await db.CloseAsync();
-                    db = null;
+                    await _db.CloseAsync();
+                    _db = null;
                 }
-                if (File.Exists(dbPath))
+
+                if (File.Exists(_dbPath))
                 {
-                    File.Delete(dbPath);
+                    File.Delete(_dbPath);
                     Debug.WriteLine("[DeleteOfflineDatabase] Database file deleted successfully.");
                 }
                 else
@@ -221,40 +206,30 @@
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DeleteOfflineDatabase] Error deleting database: {ex.Message}");
+                Debug.WriteLine($"[DeleteOfflineDatabase] Error: {ex.Message}");
             }
         }
 
-        #region table actions
-        public async Task<List<Area>> GetAllAreasAsync()
-        {
-            var test = db.Table<Area>().ToListAsync();
-            return await db.Table<Area>().ToListAsync();
-        }
+        // ── Table queries ─────────────────────────────────────────────────────
 
-        public async Task<List<Badge>> GetAllBadgeAsync()
-        {
-            return await db.Table<Badge>().ToListAsync();
-        }
+        public Task<List<Area>> GetAllAreasAsync()
+            => _db.Table<Area>().ToListAsync();
 
-        public async Task<List<AreaValidationResult>> GetAllAreaValidationResultAsync()
-        {
-            return await db.Table<AreaValidationResult>().ToListAsync();
-        }
+        public Task<List<Badge>> GetAllBadgeAsync()
+            => _db.Table<Badge>().ToListAsync();
 
-        public async Task<List<OfflineScanData>> GetOfflineScans()
-        {
-            return await db.Table<OfflineScanData>().ToListAsync();
-        }
+        public Task<List<AreaValidationResult>> GetAllAreaValidationResultAsync()
+            => _db.Table<AreaValidationResult>().ToListAsync();
+
+        public Task<List<OfflineScanData>> GetOfflineScans()
+            => _db.Table<OfflineScanData>().ToListAsync();
 
         public async Task UpdateOfflineScanDataAsync(BadgeValidationRequest badgeValidationRequest, int validationResult)
         {
             try
             {
                 if (badgeValidationRequest == null)
-                {
                     throw new ArgumentNullException(nameof(badgeValidationRequest));
-                }
 
                 var area = await GetAreaByIdentifierAsync(badgeValidationRequest.AreaIdentifier);
 
@@ -262,7 +237,7 @@
                 {
                     Barcode = badgeValidationRequest.Barcode,
                     AreaId = badgeValidationRequest.AreaIdentifier,
-                    AreaName = area.Name,
+                    AreaName = area?.Name,
                     DateTime = badgeValidationRequest.DateTime,
                     ScannedDateTime = badgeValidationRequest.DateTime,
                     Mode = badgeValidationRequest.Mode,
@@ -270,17 +245,17 @@
                     ValidationResult = validationResult
                 };
 
-                await db.InsertAsync(offlineScanData);
+                await _db.InsertAsync(offlineScanData);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine("[UpdateOfflineScanDataAsync] Error: " + ex.Message);
             }
         }
 
         public async Task<bool> TableExistsAsync(string tableName)
         {
-            var result = await db.ExecuteScalarAsync<int>(
+            var result = await _db.ExecuteScalarAsync<int>(
                 $"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{tableName}'");
             return result > 0;
         }
@@ -289,15 +264,16 @@
         {
             try
             {
-                var record = await db.Table<OfflineScanData>().Where(x => x.Id == recordId).FirstOrDefaultAsync();
+                var record = await _db.Table<OfflineScanData>()
+                    .Where(x => x.Id == recordId)
+                    .FirstOrDefaultAsync();
+
                 if (record != null)
-                {
-                    await db.DeleteAsync(record);
-                }
+                    await _db.DeleteAsync(record);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DeleteOfflineRecordAsync] Error deleting record with Id {recordId}: {ex.Message}");
+                Debug.WriteLine($"[DeleteOfflineRecordAsync] Error deleting record {recordId}: {ex.Message}");
             }
         }
 
@@ -305,56 +281,56 @@
         {
             try
             {
-                await db.DeleteAllAsync<OfflineScanData>();
-                Debug.WriteLine("[DeleteAllOfflineRecordsAsync] All offline records deleted successfully.");
+                await _db.DeleteAllAsync<OfflineScanData>();
+                Debug.WriteLine("[DeleteAllOfflineRecordsAsync] All offline records deleted.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DeleteAllOfflineRecordsAsync] Error deleting all offline records: {ex.Message}");
+                Debug.WriteLine($"[DeleteAllOfflineRecordsAsync] Error: {ex.Message}");
             }
         }
-        #endregion
 
+        // ── Private helpers ───────────────────────────────────────────────────
 
-        #region private methods
+        private static BadgeValidationResponse NotFound(BadgeValidationResponse response)
+        {
+            response.ValidationResult = Convert.ToInt32(Enums.BadgeValidationResult.BadgeNotFound);
+            response.ValidationResultName = ConstantsName.BadgeNotFound;
+            return response;
+        }
+
         private async Task SafeCreateTableAsync<T>() where T : new()
         {
             try
             {
-                if (db == null)
+                if (_db == null)
                 {
-                    Debug.WriteLine($"[SafeCreateTableAsync] Database connection is null for type: {typeof(T).Name}");
+                    Debug.WriteLine($"[SafeCreateTableAsync] DB connection null for {typeof(T).Name}");
                     return;
                 }
 
-                // Simple check to ensure DB is open and working
-                await db.ExecuteScalarAsync<int>("SELECT 1");
-
-                await db.CreateTableAsync<T>();
-                Debug.WriteLine($"[SafeCreateTableAsync] Table created for type: {typeof(T).Name}");
+                await _db.ExecuteScalarAsync<int>("SELECT 1");
+                await _db.CreateTableAsync<T>();
+                Debug.WriteLine($"[SafeCreateTableAsync] Table created: {typeof(T).Name}");
             }
-            catch (SQLite.SQLiteException sqliteEx)
+            catch (SQLiteException sqliteEx)
             {
-                Debug.WriteLine($"[SafeCreateTableAsync] SQLite error creating table {typeof(T).Name}: {sqliteEx.Message}");
+                Debug.WriteLine($"[SafeCreateTableAsync] SQLite error for {typeof(T).Name}: {sqliteEx.Message}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SafeCreateTableAsync] Unexpected error creating table {typeof(T).Name}: {ex.Message}");
+                Debug.WriteLine($"[SafeCreateTableAsync] Error for {typeof(T).Name}: {ex.Message}");
             }
         }
 
-        private async Task<Area?> GetAreaByIdentifierAsync(string? areaIdentifier)
+        private Task<Area?> GetAreaByIdentifierAsync(string? areaIdentifier)
         {
             if (string.IsNullOrWhiteSpace(areaIdentifier))
-            {
-                return null;
-            }
-              
-            return await db.Table<Area>()
-                .Where(a => a.Identifier == areaIdentifier)
-                .FirstOrDefaultAsync();
-        }
-        #endregion
+                return Task.FromResult<Area?>(null);
 
+            return _db.Table<Area>()
+                .Where(a => a.Identifier == areaIdentifier)
+                .FirstOrDefaultAsync()!;
+        }
     }
 }

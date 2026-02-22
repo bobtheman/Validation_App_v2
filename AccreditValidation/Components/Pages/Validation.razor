@@ -1,172 +1,143 @@
-﻿@page "/Validation"
+@page "/Validation"
 
 @using AccreditValidation.Shared.Constants
 @using Components
 @using AccreditValidation.Components.Pages.Xaml;
 
 <AuthWrapper>
-    <div class="settings-container @AppState.CustomBackgroundClass" id="validation_holder_container" @ref="validation_holder_container">
+    <div class="validation-container @AppState.CustomBackgroundClass" id="validation_holder_container" @ref="validation_holder_container">
 
-        <!-- Area label + filter toggle button on same line -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin: 0;
-                visibility:@(ShowFilter ? "visible" : "hidden"); white-space: nowrap;">
-                @LocalizationService["Area"]
-            </h2>
+        <!-- ── NFC subtle status badge ─────────────────────────────────────── -->
+        @if (IsNfcAvailable)
+        {
+            <div class="nfc-badge @(IsNfcListening ? "nfc-badge--active" : "")">
+                <i class="bi bi-wifi nfc-badge-icon @(IsNfcListening ? "nfc-pulse" : "")"></i>
+                <span>@(IsNfcListening ? LocalizationService["NfcReady"] : StatusMessage)</span>
+            </div>
+        }
 
-            <!-- Filter toggle button fixed right -->
-            <button @onclick="ToggleFilter"
-                    id="filter_toggle_button"
-                    style="padding: 10px; background-color: transparent; color: #2563eb; border: none; border-radius: 8px; cursor: pointer;"
-                    onmouseover="this.style.backgroundColor='#e0f0ff'"
-                    onmouseout="this.style.backgroundColor='transparent'"
-                    title="@LocalizationService["Filter"]"
-                    aria-label="@LocalizationService["Filter"]">
-                @if (ShowFilter)
-                {
-                    <i class="bi bi-arrows-collapse" style="font-size: 1.25rem;"></i>
-                }
-                else
-                {
-                    <i class="bi bi-arrows-expand" style="font-size: 1.25rem;"></i>
-                }
-            </button>
-        </div>
+        <!-- ── Filter card ─────────────────────────────────────────────────── -->
+        <div class="settings-card">
 
-        <!-- Filter section toggled -->
-        <div id="filter_holder_div" style="display:@(ShowFilter ? "block" : "none")">
-
-            <!-- Area dropdown -->
-            <select class="validation-picker" @onchange="OnAreaChanged"
-                    disabled="@(AreaList == null || AreaList.Count == 0)"
-                    style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 1rem;">
-                @if (AreaList == null || AreaList.Count == 0)
-                {
-                    <option disabled selected>@LocalizationService["NoAreasAvailable"]</option>
-                }
-                else
-                {
-                    @foreach (var area in AreaList)
-                    {
-                        <option value="@area.Identifier"
-                                selected="@(AppState.SelectedAreaIdentifier == area.Identifier ? "selected" : null)">
-                            @area.Name
-                        </option>
-                    }
-                }
-            </select>
-
-            <!-- Direction heading -->
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-top: 0; margin-bottom: 0.5rem;">
-                @LocalizationService["Direction"]
-            </h2>
-
-            <!-- Direction dropdown -->
-            <select class="validation-picker" @onchange="OnSelectedDirectionChanged"
-                    style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 1rem;">
-                @foreach (var direction in DirectionList)
-                {
-                    <option value="@direction.Identifier"
-                            selected="@(AppState.SelectedDirectionIdentifier == direction.Identifier ? "selected" : null)">
-                        @direction.Direction
-                    </option>
-                }
-            </select>
-
-            <!-- Manual barcode input -->
-            @if (UseManualInput)
-            {
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                    <input class="manual-input"
-                           type="number"
-                           style="flex: 1; border: 1px solid #d1d5db; border-radius: 4px; padding: 0.5rem; height: 44px;"
-                           @bind="BarcodeData"
-                           placeholder="@LocalizationService["Barcode"]" />
-                    <button @onclick="Validate"
-                            class="btn btn-outline-primary"
-                            style="display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; height: 44px;">
-                        <i class="bi bi-search" style="font-size: 1.25rem;"></i>
-                    </button>
-                    <button @onclick="Clear"
-                            class="btn btn-outline-secondary"
-                            style="display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; height: 44px;">
-                        <i class="bi bi-x-circle" style="font-size: 1.25rem;"></i>
-                    </button>
+            <!-- Card header row: Area label + collapse toggle -->
+            <div class="filter-header">
+                <div class="settings-card-header" style="padding: 0;">
+                    <i class="bi bi-funnel card-icon"></i>
+                    <span style="visibility:@(ShowFilter ? "visible" : "hidden")">@LocalizationService["Area"]</span>
                 </div>
-            }
-
-            <!-- Camera scan button (non-Honeywell devices) -->
-            @if (UseDeviceCameraView)
-            {
-                <button class="btn btn-outline-primary w-100" style="margin-bottom: 0.5rem;"
-                        @onclick="OpenNativeCameraPage" type="button">
-                    <i class="bi bi-camera" style="margin-right: 0.4rem;"></i>
-                    @LocalizationService["Scan"]
+                <button class="filter-toggle-btn" @onclick="ToggleFilter"
+                        title="@LocalizationService["Filter"]"
+                        aria-label="@LocalizationService["Filter"]">
+                    <i class="bi @(ShowFilter ? "bi-arrows-collapse" : "bi-arrows-expand")"></i>
                 </button>
-            }
+            </div>
 
-            <!-- ── NFC button ──────────────────────────────────────────────── -->
-            @if (IsNfcAvailable)
-            {
-                <button class="btn w-100 @(IsNfcListening ? "btn-warning" : "btn-outline-success")"
-                        style="margin-bottom: 0.5rem;"
-                        @onclick="ToggleNfcListening"
-                        type="button"
-                        title="@(IsNfcListening ? LocalizationService["NfcStopListening"] : LocalizationService["NfcScan"])">
-                    @if (IsNfcListening)
+            <div id="filter_holder_div" style="display:@(ShowFilter ? "block" : "none"); padding: 0 1rem 1rem;">
+
+                <!-- Area dropdown -->
+                <select class="settings-select card-select" @onchange="OnAreaChanged"
+                        disabled="@(AreaList == null || AreaList.Count == 0)">
+                    @if (AreaList == null || AreaList.Count == 0)
                     {
-                        <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
-                            <i class="bi bi-wifi" style="font-size: 1.25rem; animation: pulse 1s infinite;"></i>
-                            @LocalizationService["NfcStopListening"]
-                        </span>
+                        <option disabled selected>@LocalizationService["NoAreasAvailable"]</option>
                     }
                     else
                     {
-                        <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
-                            <i class="bi bi-wifi" style="font-size: 1.25rem;"></i>
-                            @LocalizationService["NfcScan"]
-                        </span>
+                        @foreach (var area in AreaList)
+                        {
+                            <option value="@area.Identifier"
+                                    selected="@(AppState.SelectedAreaIdentifier == area.Identifier ? "selected" : null)">
+                                @area.Name
+                            </option>
+                        }
                     }
-                </button>
+                </select>
 
-                @if (IsNfcListening && !string.IsNullOrEmpty(StatusMessage))
-                {
-                    <p style="text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
-                        @StatusMessage
-                    </p>
-                }
-            }
-            <!-- ─────────────────────────────────────────────────────────────── -->
+                <div class="row-divider" style="margin: 0.5rem 0;"></div>
 
-        </div>
-
-        <!-- Result Display -->
-        @if (ShowResult)
-        {
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; position: relative;" id="validation_result_holder">
-                <div id="validation_image_div" style="display:@(ShowValidationImageDiv ? "block" : "none")">
-                    <img src="@PhotoUrl" width="100" style="border-radius: 8px;" id="validation_photo_holder" />
-
-                    @if (AppState.CustomBackgroundClass == ConstantsName.BGCustomDanger)
-                    {
-                        <div id="validation_result_denied">@LocalizationService["Denied"]</div>
-                        <span style="position: absolute; top: -10px; right: -10px; color: red; font-size: 1.5rem;">
-                            <i class="bi bi-x-circle-fill"></i>
-                        </span>
-                    }
-                    else if (AppState.CustomBackgroundClass == ConstantsName.BGCustomSuccess)
-                    {
-                        <span style="position: absolute; top: -10px; right: -10px; color: green; font-size: 1.5rem;">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </span>
-                    }
+                <!-- Direction label -->
+                <div class="settings-card-header" style="padding: 0.5rem 0 0.25rem;">
+                    <i class="bi bi-arrow-left-right card-icon"></i>
+                    <span>@LocalizationService["Direction"]</span>
                 </div>
 
-                <p style="font-weight: 600; margin-top: 0.5rem;">@OrganisationName</p>
-                <p>@SubTypeName</p>
-                <p>@Name</p>
-                <p>@Direction</p>
-                <p>@ValidationResultName</p>
+                <!-- Direction dropdown -->
+                <select class="settings-select card-select" @onchange="OnSelectedDirectionChanged">
+                    @foreach (var direction in DirectionList)
+                    {
+                        <option value="@direction.Identifier"
+                                selected="@(AppState.SelectedDirectionIdentifier == direction.Identifier ? "selected" : null)">
+                            @direction.Direction
+                        </option>
+                    }
+                </select>
+
+                <!-- Manual barcode input -->
+                @if (UseManualInput)
+                {
+                    <div class="row-divider" style="margin: 0.75rem 0 0.5rem;"></div>
+                    <div class="manual-input-row">
+                        <input class="manual-input-field"
+                               type="number"
+                               @bind="BarcodeData"
+                               placeholder="@LocalizationService["Barcode"]" />
+                        <button @onclick="Validate" class="icon-btn icon-btn--primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button @onclick="Clear" class="icon-btn icon-btn--secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                }
+
+                <!-- Camera scan button -->
+                @if (UseDeviceCameraView)
+                {
+                    <div style="margin-top: 0.75rem;">
+                        <button class="btn-action btn-action--primary w-100" @onclick="OpenNativeCameraPage" type="button">
+                            <i class="bi bi-camera"></i>
+                            @LocalizationService["Scan"]
+                        </button>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <!-- ── Result card ─────────────────────────────────────────────────── -->
+        @if (ShowResult)
+        {
+            <div class="settings-card result-card" id="validation_result_holder">
+
+                @if (ShowValidationImageDiv)
+                {
+                    <div class="result-image-wrap" id="validation_image_div">
+                        <img src="@PhotoUrl" class="result-photo" id="validation_photo_holder" />
+
+                        @if (AppState.CustomBackgroundClass == ConstantsName.BGCustomDanger)
+                        {
+                            <div id="validation_result_denied">@LocalizationService["Denied"]</div>
+                            <span class="result-badge result-badge--danger">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </span>
+                        }
+                        else if (AppState.CustomBackgroundClass == ConstantsName.BGCustomSuccess)
+                        {
+                            <span class="result-badge result-badge--success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </span>
+                        }
+                    </div>
+                }
+
+                <div class="result-details">
+                    <p class="result-org">@OrganisationName</p>
+                    <p class="result-subtype">@SubTypeName</p>
+                    <p class="result-name">@Name</p>
+                    <p class="result-meta">@Direction</p>
+                    <p class="result-meta">@ValidationResultName</p>
+                </div>
+
             </div>
         }
 
@@ -176,7 +147,7 @@
 <style>
     @@keyframes pulse {
         0%   { opacity: 1; }
-        50%  { opacity: 0.4; }
+        50%  { opacity: 0.35; }
         100% { opacity: 1; }
     }
 </style>

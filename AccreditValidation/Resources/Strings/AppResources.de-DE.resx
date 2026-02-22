@@ -126,6 +126,12 @@
   <data name="NfcError" xml:space="preserve">
     <value>NFC-Fehler</value>
   </data>
+  <data name="NfcNotAvailable" xml:space="preserve">
+    <value>NFC nicht verfügbar</value>
+  </data>
+  <data name="NfcReady" xml:space="preserve">
+    <value>NFC-bereit</value>
+  </data>
   <data name="AccreditValidation" xml:space="preserve">
     <value>Accredit Validation</value>
   </data>
@@ -558,10 +564,7 @@
   <data name="FingerprintError" xml:space="preserve">
     <value>Fingerabdruckfehler</value>
   </data>
-  <data name="NfcNotAvailable" xml:space="preserve">
-    <value>NFC nicht verfügbar</value>
-  </data>
-  <data name="NfcReady" xml:space="preserve">
-    <value>NFC-bereit</value>
+  <data name="UseNfc" xml:space="preserve">
+    <value>Verwenden Sie NFC</value>
   </data>
 </root>

@@ -13,14 +13,13 @@ namespace AccreditValidation.Components.Pages
     using Microsoft.Maui.ApplicationModel;
     using Plugin.Maui.Audio;
     using System.Globalization;
-    using System.Threading.Tasks;
 
     public partial class Validation : IDisposable
     {
         // ── Injected services ─────────────────────────────────────────────────
 
-        [Inject] IAppState AppState { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] private IAppState AppState { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
         [Inject] private IAuthService AuthService { get; set; }
         [Inject] private ILocalizationService LocalizationService { get; set; }
         [Inject] private IScannerCodeHelper ScannerCodeHelper { get; set; }
@@ -33,10 +32,6 @@ namespace AccreditValidation.Components.Pages
         [Inject] private IRestDataService RestDataService { get; set; }
         [Inject] private IOfflineDataService OfflineDataService { get; set; }
         [Inject] private IFileService FileService { get; set; }
-
-        /// <summary>
-        /// Injected NFC service. Registered as a singleton in MauiProgram.cs.
-        /// </summary>
         [Inject] private INfcService NfcService { get; set; }
 
         // ── State ─────────────────────────────────────────────────────────────
@@ -53,22 +48,26 @@ namespace AccreditValidation.Components.Pages
         private string Direction { get; set; } = string.Empty;
         private string ValidationResultName { get; set; } = string.Empty;
         private bool ShowFilter { get; set; } = false;
+        private string BarcodeData { get; set; } = string.Empty;
+        private bool ShowValidationImageDiv { get; set; } = false;
+        private string StatusMessage { get; set; } = string.Empty;
+        private ElementReference validation_holder_container;
+
+        // Device type — set once on first render
+        private bool IsHoneywellDevice { get; set; } = false;
+        private bool UseDeviceCameraView { get; set; } = false;
+
+        // Honeywell scanner
         public static string SelectedScannerName { get; set; } = string.Empty;
         private BarcodeReader MSelectedReader { get; set; }
         private bool MSoftOneShotScanStarted = false;
-        private bool IsHoneywellDevice = false;
-        private bool UseDeviceCameraView = false;
-        private string StatusMessage { get; set; } = string.Empty;
-        private string BarcodeData { get; set; } = string.Empty;
-        private bool ShowValidationImageDiv { get; set; } = false;
-        private BadgeValidationRequest badgeValidationRequest = new BadgeValidationRequest();
-        private ElementReference validation_holder_container;
-        private string CustomBackgroundClass = string.Empty;
-        private bool isFirstRender = true;
 
-        // NFC state
+        // NFC
         private bool IsNfcAvailable { get; set; } = false;
         private bool IsNfcListening { get; set; } = false;
+
+        // Reused request object — avoids repeated allocations per scan
+        private readonly BadgeValidationRequest _badgeValidationRequest = new();
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -82,49 +81,47 @@ namespace AccreditValidation.Components.Pages
             CultureInfo.DefaultThreadCurrentCulture = currentCulture;
             CultureInfo.DefaultThreadCurrentUICulture = currentCulture;
 
-            UseManualInput = await CheckManualInputOption();
+            // Run independent data fetches in parallel
+            var manualInputTask = CheckManualInputOption();
+            var areaTask = GetAreaList();
+            var directionTask = GetDirectionsList();
+            var nfcEnabledTask = SecureStorage.GetAsync(SecureStorageKeys.UseNfc);
 
-            AreaList = await GetAreaList();
-            DirectionList = await GetDirectionsList();
+            await Task.WhenAll(manualInputTask, areaTask, directionTask, nfcEnabledTask);
+
+            UseManualInput = manualInputTask.Result;
+            AreaList = areaTask.Result;
+            DirectionList = directionTask.Result;
 
             AlertService.RegisterRefreshCallback(StateHasChanged);
 
-            IsNfcAvailable = NfcService.IsAvailable && NfcService.IsEnabled;
+            // NFC: available only when hardware is present AND the user has enabled it in Settings
+            var nfcUserEnabled = nfcEnabledTask.Result == "true";
+            IsNfcAvailable = NfcService.IsAvailable && NfcService.IsEnabled && nfcUserEnabled;
+
+            if (IsNfcAvailable)
+                StartNfc();
 
             AppState.ShowSpinner = false;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
-            {
-                isFirstRender = true;
-                ShowFilter = true;
-                StateHasChanged();
-            }
+            if (!firstRender)
+                return;
+
+            ShowFilter = true;
 
             IsHoneywellDevice = DevicePlaformHelper.HoneywellDevice();
-            UseDeviceCameraView = !DevicePlaformHelper.HoneywellDevice();
+            UseDeviceCameraView = !IsHoneywellDevice;
 
             if (IsHoneywellDevice)
-            {
                 OpenBarcodeReader();
-            }
+
+            StateHasChanged();
         }
 
         // ── NFC ───────────────────────────────────────────────────────────────
-        private void ToggleNfcListening()
-        {
-            if (IsNfcListening)
-            {
-                StopNfc();
-            }
-            else
-            {
-                StartNfc();
-            }
-        }
-
         private void StartNfc()
         {
             if (!NfcService.IsAvailable || !NfcService.IsEnabled)
@@ -157,11 +154,17 @@ namespace AccreditValidation.Components.Pages
 
         private async void OnNfcTagRead(object? sender, string payload)
         {
+            // Stop listening immediately so a second tap does not fire before validation completes
             StopNfc();
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 await ValidateEntry(payload);
+
+                // Resume listening automatically after each successful read
+                if (IsNfcAvailable)
+                    StartNfc();
+
                 StateHasChanged();
             });
         }
@@ -201,50 +204,42 @@ namespace AccreditValidation.Components.Pages
             }
         }
 
-        private async Task<List<ValidationDirection>> GetDirectionsList()
-        {
-            return await DirectionService.GetValidationDirectionList(SelectedDirectionCode);
-        }
+        private Task<List<ValidationDirection>> GetDirectionsList()
+            => DirectionService.GetValidationDirectionList(SelectedDirectionCode);
 
-        private async void ToggleFilter()
+        // ── Filter / UI helpers ───────────────────────────────────────────────
+
+        private void ToggleFilter()
         {
             ShowFilter = !ShowFilter;
             AppState.ShowFilter = ShowFilter;
             StateHasChanged();
         }
 
-        private async Task Clear()
+        private Task Clear()
         {
             ResetFrom();
+            return Task.CompletedTask;
         }
 
-        private async Task Validate() => await ValidateEntry(BarcodeData);
-
-        private void ResetForm()
-        {
-            BarcodeData = string.Empty;
-            ShowResult = false;
-            OrganisationName = SubTypeName = Name = PhotoUrl = StatusMessage = string.Empty;
-        }
+        private Task Validate() => ValidateEntry(BarcodeData);
 
         // ── Entry Validation ──────────────────────────────────────────────────
 
         private async Task ValidateEntry(string barcode)
         {
             AppState.ShowSpinner = true;
-
             ResetFrom();
 
             if (string.IsNullOrWhiteSpace(barcode))
             {
                 AppState.ShowSpinner = false;
+                StateHasChanged();
                 return;
             }
 
             if (IsHoneywellDevice)
-            {
                 ShowFilter = false;
-            }
 
             var selectedAreaIdentifier = AreaList.FirstOrDefault(a => a.IsSelected)?.Identifier ?? string.Empty;
             var selectedDirectionIdentifier = DirectionList.FirstOrDefault(d => d.IsSelected)?.Identifier ?? string.Empty;
@@ -254,6 +249,9 @@ namespace AccreditValidation.Components.Pages
                 await AlertService.ShowErrorAlertAsync(
                     LocalizationService["InvalidArea"],
                     LocalizationService["PleaseEnteraValidArea"]);
+                AppState.ShowSpinner = false;
+                StateHasChanged();
+                return;
             }
 
             if (string.IsNullOrEmpty(selectedDirectionIdentifier))
@@ -261,18 +259,34 @@ namespace AccreditValidation.Components.Pages
                 await AlertService.ShowErrorAlertAsync(
                     LocalizationService["InvalidDirection"],
                     LocalizationService["PleaseEnteraValidDirection"]);
+                AppState.ShowSpinner = false;
+                StateHasChanged();
+                return;
             }
 
-            badgeValidationRequest.Barcode = barcode;
-            badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
-            badgeValidationRequest.DateTime = DateTime.Now;
-            badgeValidationRequest.Direction = selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString()
+            _badgeValidationRequest.Barcode = barcode;
+            _badgeValidationRequest.AreaIdentifier = selectedAreaIdentifier;
+            _badgeValidationRequest.DateTime = DateTime.Now;
+            _badgeValidationRequest.Direction = selectedDirectionIdentifier == Enums.ValidationDirection.In.ToString()
                 ? Enums.ValidationDirection.In
                 : Enums.ValidationDirection.Out;
 
-            await ProcessRequest(badgeValidationRequest);
-
-            AppState.ShowSpinner = false;
+            try
+            {
+                await ProcessRequest(_badgeValidationRequest);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ValidateEntry] ProcessRequest failed: {ex.Message}");
+                await AlertService.ShowErrorAlertAsync(
+                    LocalizationService["AnErrorOccured"],
+                    LocalizationService["PleaseTryAgain"]);
+            }
+            finally
+            {
+                AppState.ShowSpinner = false;
+                StateHasChanged();
+            }
         }
 
         // ── Dropdowns ─────────────────────────────────────────────────────────
@@ -303,6 +317,11 @@ namespace AccreditValidation.Components.Pages
 
         private async void MBarcodeReader_BarcodeDataReady(object sender, BarcodeDataArgs e)
         {
+            if (!string.IsNullOrEmpty(e.Data))      
+            {
+                await MainThread.InvokeOnMainThreadAsync(() => UpdateDetailItemWithScannedValue(e.Data));
+            }
+
             if (MSoftOneShotScanStarted)
             {
                 await MSelectedReader.SoftwareTriggerAsync(false);
@@ -335,9 +354,7 @@ namespace AccreditValidation.Components.Pages
         {
             var trimmed = contents?.Trim();
             if (!string.IsNullOrEmpty(trimmed))
-            {
                 await ValidateEntry(trimmed);
-            }
         }
 
         // ── Device Camera (MAUI) ──────────────────────────────────────────────
@@ -371,12 +388,9 @@ namespace AccreditValidation.Components.Pages
 
         private async Task ProcessRequest(BadgeValidationRequest badgeValidationRequest)
         {
-            var response = new BadgeValidationResponse();
-
-            if (ConnectivityChecker.ConnectivityCheck())
-                response = await RestDataService.ValidateRequest(badgeValidationRequest);
-            else
-                response = await OfflineDataService.ValidateRequestOffline(badgeValidationRequest);
+            var response = ConnectivityChecker.ConnectivityCheck()
+                ? await RestDataService.ValidateRequest(badgeValidationRequest)
+                : await OfflineDataService.ValidateRequestOffline(badgeValidationRequest);
 
             if (response != null && response.ValidationResultName != ConstantsName.Success && response.Badge != null)
             {
@@ -477,23 +491,17 @@ namespace AccreditValidation.Components.Pages
         private void SetSuccessBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomSuccess;
         private void SetDangerBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomDanger;
         private void ClearBackground() => AppState.CustomBackgroundClass = ConstantsName.BGCustomDefault;
-        private void ClearBarcodeData() => BarcodeData = string.Empty;
 
         private async Task<bool> CheckManualInputOption()
         {
-            var manualInputValue = await SecureStorage.GetAsync("selectedInputOptionCode");
-
-            if (string.IsNullOrEmpty(manualInputValue))
-                return false;
-
-            return manualInputValue == ConstantsName.ShowManualInputCode;
+            var value = await SecureStorage.GetAsync(SecureStorageKeys.SelectedInputOptionCode);
+            return !string.IsNullOrEmpty(value) && value == ConstantsName.ShowManualInputCode;
         }
 
         // ── IDisposable ───────────────────────────────────────────────────────
 
         public void Dispose()
         {
-            // Ensure NFC and scanner are stopped when the page is torn down.
             if (IsNfcListening)
                 StopNfc();
 

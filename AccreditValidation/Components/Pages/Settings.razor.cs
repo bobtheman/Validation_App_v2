@@ -11,6 +11,21 @@ namespace AccreditValidation.Components.Pages
 
     public partial class Settings
     {
+        // ── Injected services ─────────────────────────────────────────────────
+
+        [Inject] private IAppState AppState { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
+        [Inject] private IAuthService AuthService { get; set; }
+        [Inject] private ILocalizationService LocalizationService { get; set; }
+        [Inject] private ILanguageStateService LanguageStateService { get; set; }
+        [Inject] private IVersionProvider VersionProvider { get; set; }
+        [Inject] private IAlertService AlertService { get; set; }
+        [Inject] private IDevicePlaformHelper DevicePlaformHelper { get; set; }
+
+        [Inject] private INfcService NfcService { get; set; }
+
+        // ── Fingerprint toggle ────────────────────────────────────────────────
+
         private bool _useFingerprint;
         public bool UseFingerprint
         {
@@ -25,82 +40,102 @@ namespace AccreditValidation.Components.Pages
             }
         }
 
-        [Inject] IAppState AppState { get; set; }
-        protected string SelectedLanguageCode { get; set; }
+        // ── NFC toggle ────────────────────────────────────────────────────────
 
+        private bool _useNfc;
+
+        public bool UseNfc
+        {
+            get => _useNfc;
+            set
+            {
+                if (_useNfc != value)
+                {
+                    _useNfc = value;
+                    ToggleNfc(value);
+                }
+            }
+        }
+
+        // ── State ─────────────────────────────────────────────────────────────
+
+        protected string SelectedLanguageCode { get; set; }
         protected string SelectedInputOptionCode { get; set; } = ConstantsName.HideManualInputCode;
 
         private string AppVersion;
         private string Version;
         private string Build;
-        [Inject] NavigationManager NavigationManager { get; set; }
-
-        [Inject] IAuthService AuthService { get; set; }
-
-        [Inject] ILocalizationService LocalizationService { get; set; }
-
-        [Inject] private ILanguageStateService LanguageStateService { get; set; }
-
-        [Inject] private IVersionProvider VersionProvider { get; set; }
-
-        [Inject] private IAlertService AlertService { get; set; }
-
-        [Inject] private IDevicePlaformHelper DevicePlaformHelper { get; set; }
 
         private List<LanguageModel> LanguageList { get; set; } = new List<LanguageModel>();
-
         private List<InputOptionModel> InputOptionList { get; set; } = new List<InputOptionModel>();
+
         private bool ShowFingerPrintOption { get; set; } = false;
 
+        private bool ShowNfcOption { get; set; } = false;
+
         private bool showConfirmResetApplicationDialog = false;
-
         private bool showConfirmLogoutDialog = false;
-
         private TaskCompletionSource<bool>? confirmResetApplication;
-
         private TaskCompletionSource<bool>? confirmLogout;
+
+        // ── Lifecycle ─────────────────────────────────────────────────────────
 
         protected override async Task OnInitializedAsync()
         {
             AppState.CustomBackgroundClass = ConstantsName.BGCustomDefault;
             AppState.SelectedPage = LocalizationService["Settings"];
+
             LanguageList = await GetLanguageList();
             InputOptionList = await GetInputOptionList();
-            UseFingerprint = await SecureStorage.GetAsync("useFingerPrint") == "true";
+
+            // Restore persisted toggle states from SecureStorage
+            _useFingerprint = await SecureStorage.GetAsync(SecureStorageKeys.UseFingerPrint) == "true";
+
+            // NFC: default to enabled on first run when hardware is available
+            var savedNfc = await SecureStorage.GetAsync(SecureStorageKeys.UseNfc);
+            if (savedNfc == null && NfcService.IsAvailable)
+            {
+                _useNfc = true;
+                await SecureStorage.SetAsync(SecureStorageKeys.UseNfc, "true");
+            }
+            else
+            {
+                _useNfc = savedNfc == "true";
+            }
+
             AppVersion = await VersionProvider.GetVersionAsync();
             Version = VersionProvider.Version;
             Build = VersionProvider.Build;
-            AlertService.RegisterRefreshCallback(StateHasChanged); 
+
+            AlertService.RegisterRefreshCallback(StateHasChanged);
         }
 
         protected override void OnAfterRender(bool firstRender)
         {
-            if (firstRender)
-            {
-            }
+            if (!firstRender)
+                return;
 
-            if (!DevicePlaformHelper.HoneywellDevice())
-            {
-                ShowFingerPrintOption = true;
-                
-            }
+            // Fingerprint: available on non-Honeywell devices
+            ShowFingerPrintOption = !DevicePlaformHelper.HoneywellDevice();
+
+            // NFC: available when hardware is present and the OS reports it enabled
+            ShowNfcOption = NfcService.IsAvailable;
 
             StateHasChanged();
         }
 
+        // ── Language ──────────────────────────────────────────────────────────
+
         private async Task<List<LanguageModel>> GetLanguageList()
         {
             var languages = LocalizationService.GetLanguageList();
-
-            var setSelectedLanguage = await SecureStorage.GetAsync("selectedLanguageCode");
+            var savedCode = await SecureStorage.GetAsync(SecureStorageKeys.SelectedLanguageCode);
 
             foreach (var language in languages)
             {
-                language.IsSelected = language.LanguageCode == setSelectedLanguage;
+                language.IsSelected = language.LanguageCode == savedCode;
                 if (language.IsSelected)
-                {
                     SelectedLanguageCode = language.LanguageCode ?? LocalizationService.GetDefaultLanguageCode();
-                }
             }
 
             return languages;
@@ -115,22 +150,22 @@ namespace AccreditValidation.Components.Pages
             if (selectedLang != null)
             {
                 LocalizationService.SetCulture(new CultureInfo(selectedLang.LanguageCode ?? LocalizationService.GetDefaultLanguageCode()));
-                await SecureStorage.SetAsync("selectedLanguageCode", SelectedLanguageCode ?? LocalizationService.GetDefaultLanguageCode());
+                await SecureStorage.SetAsync(SecureStorageKeys.SelectedLanguageCode, SelectedLanguageCode ?? LocalizationService.GetDefaultLanguageCode());
                 AppState.SelectedLanguageCode = SelectedLanguageCode ?? LocalizationService.GetDefaultLanguageCode();
             }
 
             LanguageList = await GetLanguageList();
-
             InputOptionList = await GetInputOptionList();
-
             LanguageStateService.NotifyLanguageChanged();
 
             StateHasChanged();
         }
 
+        // ── Input options ─────────────────────────────────────────────────────
+
         private async Task<List<InputOptionModel>> GetInputOptionList()
         {
-            var selectedCode = await SecureStorage.GetAsync("selectedInputOptionCode") ?? ConstantsName.HideManualInputCode;
+            var selectedCode = await SecureStorage.GetAsync(SecureStorageKeys.SelectedInputOptionCode) ?? ConstantsName.HideManualInputCode;
 
             var inputOptionList = new List<InputOptionModel>
             {
@@ -143,7 +178,7 @@ namespace AccreditValidation.Components.Pages
                 option.IsSelected = option.InputOptionCode == selectedCode;
                 if (option.IsSelected)
                 {
-                    await SecureStorage.SetAsync("selectedInputOptionCode", option.InputOptionCode);
+                    await SecureStorage.SetAsync(SecureStorageKeys.SelectedInputOptionCode, option.InputOptionCode);
                     AppState.SelectedInputOptionCode = option.InputOptionCode;
                 }
             }
@@ -159,35 +194,41 @@ namespace AccreditValidation.Components.Pages
 
             if (selectedInputOption != null)
             {
-                await SecureStorage.SetAsync("selectedInputOptionCode", selectedInputOption.InputOptionCode ?? ConstantsName.HideManualInputCode);
+                await SecureStorage.SetAsync(SecureStorageKeys.SelectedInputOptionCode, selectedInputOption.InputOptionCode ?? ConstantsName.HideManualInputCode);
                 AppState.SelectedInputOptionCode = selectedInputOption.InputOptionCode;
             }
 
             StateHasChanged();
         }
 
+        // ── Toggle helpers ────────────────────────────────────────────────────
+
         private async void ToggleFingerprint(bool isEnabled)
         {
-            if (isEnabled)
-            {
-                await SecureStorage.SetAsync("useFingerPrint", "true");
-            }
-            else
-            {
-                await SecureStorage.SetAsync("useFingerPrint", "false");
-            }
+            await SecureStorage.SetAsync(SecureStorageKeys.UseFingerPrint, isEnabled ? "true" : "false");
         }
+
+        private async void ToggleNfc(bool isEnabled)
+        {
+            await SecureStorage.SetAsync(SecureStorageKeys.UseNfc, isEnabled ? "true" : "false");
+        }
+
+        // ── External links ────────────────────────────────────────────────────
 
         private async Task Home()
         {
             try
             {
-                Uri uri = new($"https://{(await SecureStorage.GetAsync("siteName")).Replace("/", "")}{ConstantsName.SiteUrl}");
+                var siteName = (await SecureStorage.GetAsync(SecureStorageKeys.SiteName))?.Replace("/", "") ?? string.Empty;
+                Uri uri = new($"https://{siteName}{ConstantsName.SiteUrl}");
                 await Browser.Default.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert(LocalizationService["Error"].ToString(), ex.ToString(), LocalizationService["Cancel"].ToString());
+                await Application.Current.MainPage.DisplayAlert(
+                    LocalizationService["Error"].ToString(),
+                    ex.ToString(),
+                    LocalizationService["Cancel"].ToString());
             }
         }
 
@@ -200,23 +241,25 @@ namespace AccreditValidation.Components.Pages
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert(LocalizationService["Error"].ToString(), ex.ToString(), LocalizationService["Cancel"].ToString());
+                await Application.Current.MainPage.DisplayAlert(
+                    LocalizationService["Error"].ToString(),
+                    ex.ToString(),
+                    LocalizationService["Cancel"].ToString());
             }
         }
 
-        #region logout
+        // ── Logout ────────────────────────────────────────────────────────────
+
         private async Task Logout()
         {
             if (!await ShowConfirmLogoutDialog())
-            {
                 return;
-            }
 
             AuthService.Logout();
             NavigationManager.NavigateTo("/", forceLoad: true);
-            SecureStorage.Remove("rememberMe");
-            SecureStorage.Remove("token");
-            SecureStorage.Remove("hasAuth");
+            SecureStorage.Remove(SecureStorageKeys.RememberMe);
+            SecureStorage.Remove(SecureStorageKeys.Token);
+            SecureStorage.Remove(SecureStorageKeys.HasAuth);
         }
 
         private async Task<bool> ShowConfirmLogoutDialog()
@@ -232,15 +275,13 @@ namespace AccreditValidation.Components.Pages
             showConfirmLogoutDialog = false;
             confirmLogout?.SetResult(confirmed);
         }
-        #endregion
 
-        #region reset application
+        // ── Reset application ─────────────────────────────────────────────────
+
         private async Task ResetApplication()
         {
             if (!await ShowConfirmResetApplicationDialog())
-            {
                 return;
-            }
 
             await ResetApp();
         }
@@ -261,20 +302,19 @@ namespace AccreditValidation.Components.Pages
 
         private async Task ResetApp()
         {
-            SecureStorage.Remove("username");
-            SecureStorage.Remove("password");
-            SecureStorage.Remove("siteName");
-            SecureStorage.Remove("rememberMe");
-            SecureStorage.Remove("useFingerPrint");
-            SecureStorage.Remove("photoUrl");
-            SecureStorage.Remove("selectedLanguageCode");
-            SecureStorage.Remove("selectedInputOptionCode");
-            SecureStorage.Remove("serverUrl");
-            SecureStorage.Remove("token");
-            SecureStorage.Remove("hasAuth");
-            //await _offlineDataService.DeleteDatabaseAysnc();
+            SecureStorage.Remove(SecureStorageKeys.Username);
+            SecureStorage.Remove(SecureStorageKeys.Password);
+            SecureStorage.Remove(SecureStorageKeys.SiteName);
+            SecureStorage.Remove(SecureStorageKeys.RememberMe);
+            SecureStorage.Remove(SecureStorageKeys.UseFingerPrint);
+            SecureStorage.Remove(SecureStorageKeys.UseNfc);
+            SecureStorage.Remove(SecureStorageKeys.PhotoUrl);
+            SecureStorage.Remove(SecureStorageKeys.SelectedLanguageCode);
+            SecureStorage.Remove(SecureStorageKeys.SelectedInputOptionCode);
+            SecureStorage.Remove(SecureStorageKeys.ServerUrl);
+            SecureStorage.Remove(SecureStorageKeys.Token);
+            SecureStorage.Remove(SecureStorageKeys.HasAuth);
             Application.Current.Quit();
         }
-        #endregion
     }
 }

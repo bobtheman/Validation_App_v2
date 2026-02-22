@@ -1,4 +1,5 @@
-﻿html, body {
+﻿/* ── Reset / base ────────────────────────────────────────────────────────── */
+html, body {
     overflow-x: hidden;
     margin: 0;
     padding: 0;
@@ -7,64 +8,204 @@
     overflow-y: auto;
 }
 
+/* ── Box-sizing ──────────────────────────────────────────────────────────── */
+#login_form_container *,
+#login_form_container *::before,
+#login_form_container *::after {
+    box-sizing: border-box;
+}
+
+/* ── Page container ──────────────────────────────────────────────────────── */
 #login_form_container {
-    height: auto;
     width: 100vw;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-bottom: 2rem;
 }
 
-#login-image-logo {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1rem;
-    width: 80vw;
-    max-width: 250px;
-    height: auto;
-    object-fit: contain;
-    height:100px;
-}
-
+/* ── Inner content wrapper ───────────────────────────────────────────────── */
 .full-height-container {
-    max-width: 90vw;
-    margin-left: auto;
-    margin-right: auto;
-    align-items: center;
-    justify-content: center;
+    max-width: 480px;
     width: 100%;
-    padding-bottom: 2rem;
-}
-
-#login_options_holder {
+    margin: 0 auto;
+    padding: 0.75rem 0.75rem 1rem;
     display: flex;
     flex-direction: column;
+    gap: 0.625rem;
+    box-sizing: border-box;
+}
+
+/* ── Logo ────────────────────────────────────────────────────────────────── */
+#login-image-logo {
+    display: block;
+    margin: 0.5rem auto 0.25rem;
+    width: 70vw;
+    max-width: 220px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.login-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    width: 100%;
+}
+
+/* ── Card header ─────────────────────────────────────────────────────────── */
+.login-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.card-icon {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+/* ── Row divider ─────────────────────────────────────────────────────────── */
+.row-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 0 1rem;
+}
+
+/* ── Field rows ──────────────────────────────────────────────────────────── */
+.login-field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.6rem 1rem;
+}
+
+/* ── Labels ──────────────────────────────────────────────────────────────── */
+.form-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+.form-control {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9375rem;
+    color: #111827;
+    background: #f9fafb;
+    outline: none;
+    box-sizing: border-box;
+    height: 42px;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+    .form-control:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+    }
+
+/* ── Language picker ─────────────────────────────────────────────────────── */
+.language-picker {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9375rem;
+    color: #111827;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    outline: none;
+    appearance: auto;
+    cursor: pointer;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+    .language-picker:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+    }
+
+/* ── Options row (remember-me + forgot password) ─────────────────────────── */
+#login_options_holder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.25rem;
+}
+
+/* ── Checkbox row ────────────────────────────────────────────────────────── */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    accent-color: #2563eb;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.form-check-label {
+    font-size: 0.9375rem;
+    color: #374151;
+    cursor: pointer;
+}
+
+/* ── Forgot password link ─────────────────────────────────────────────────── */
+.login-link {
+    font-size: 0.875rem;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .login-link:hover {
+        text-decoration: underline;
+    }
+
+/* ── Submit button ───────────────────────────────────────────────────────── */
+.btn-login {
+    display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-}
-
-
-.form-control {
-    width:100%;
-}
-
-.language-picker {
+    gap: 0.5rem;
     width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    border: 1.5px solid #2563eb;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: transparent;
+    cursor: pointer;
+    transition: opacity 0.15s;
 }
 
-.language-picker {
-    padding: 8px;
-    font-size: 1rem;
-    width: 100%;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
+    .btn-login:hover {
+        opacity: 0.85;
+    }
 
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -75,14 +216,131 @@
     }
 }
 
-@media (max-width: 640.98px) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   HONEYWELL — CT40 / CT45 / CK65 portrait WebView.
+   Login page has NO tab bar so usable height ≈ 584px (640 − 56px top bar).
 
+   Element budget at base styles (default, no site-name field):
+     container padding top+bottom  : 0.75 + 1rem  ≈  28px
+     logo + margins                :               ≈  96px
+     gap × 4                       : 0.625 × 4    ≈  40px
+     credentials card              :               ≈ 170px
+       header 36 + divider×2 + field-row×2 (label+input) ≈ 36+2+2×66
+     language card                 :               ≈  96px
+       header 36 + divider + field-row (select) ≈ 36+1+59
+     options row                   :               ≈  42px
+     login button                  :               ≈  47px
+                                              TOTAL ≈ 519px  ✓
+
+   This passes comfortably. The breakpoints below guard against edge cases
+   (larger system font, extra padding from WebView chrome, site-name field).
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-height: 680px), (max-width: 400px) {
+
+    .full-height-container {
+        padding: 0.4rem 0.625rem 0.5rem;
+        gap: 0.4rem;
+    }
+
+    #login-image-logo {
+        height: 64px;
+        margin: 0.25rem auto 0.1rem;
+    }
+
+    .login-card-header {
+        padding: 0.45rem 0.875rem 0.3rem;
+        font-size: 0.65rem;
+    }
+
+    .login-field-row {
+        padding: 0.45rem 0.875rem;
+        gap: 0.2rem;
+    }
+
+    .form-label {
+        font-size: 0.65rem;
+    }
+
+    .form-control,
+    .language-picker {
+        height: 38px;
+        padding: 0.45rem 0.625rem;
+        font-size: 0.875rem;
+    }
+
+    #login_options_holder {
+        padding: 0.25rem 0.125rem;
+    }
+
+    .form-check-label,
+    .login-link {
+        font-size: 0.875rem;
+    }
+
+    .btn-login {
+        padding: 0.55rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .row-divider {
+        margin: 0 0.875rem;
+    }
 }
 
-@media (max-width: 576px) {
-    #login_form_container {
-        max-height: 100vh;
-        overflow-y: auto;
+/* ── Extra-compact: site-name field visible OR very small screen ─────────── */
+/* When site name is shown (tapping logo) an extra ~80px is added.           */
+/* These styles ensure it still fits without scroll.                          */
+@media (max-height: 600px), (max-width: 360px) {
+
+    .full-height-container {
+        padding: 0.25rem 0.5rem 0.3rem;
+        gap: 0.3rem;
+    }
+
+    #login-image-logo {
+        height: 48px;
+        margin: 0.1rem auto 0.1rem;
+    }
+
+    .login-card-header {
+        padding: 0.35rem 0.75rem 0.25rem;
+        font-size: 0.625rem;
+    }
+
+    .login-field-row {
+        padding: 0.35rem 0.75rem;
+        gap: 0.15rem;
+    }
+
+    .form-label {
+        font-size: 0.6rem;
+    }
+
+    .form-control,
+    .language-picker {
+        height: 34px;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    #login_options_holder {
+        padding: 0.15rem 0;
+    }
+
+    .form-check-label,
+    .login-link {
+        font-size: 0.8125rem;
+    }
+
+    .form-check-input {
+        width: 16px;
+        height: 16px;
+    }
+
+    .btn-login {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8125rem;
+        border-radius: 9px;
     }
 }
 

@@ -132,4 +132,7 @@
   <data name="NfcReady" xml:space="preserve">
     <value />
   </data>
+  <data name="UseNfc" xml:space="preserve">
+    <value />
+  </data>
 </root>

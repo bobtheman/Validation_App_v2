@@ -1,102 +1,149 @@
-﻿@page "/Settings"
+@page "/Settings"
 @using Components
 
 <AuthWrapper>
-    <div class="settings-container max-w-3xl mx-auto">
-        <div class="flex-grow">
-            <div id="secutriy_fingerprint_container" style="display:@(ShowFingerPrintOption ? "block" : "none")">
-                <!-- Security -->
-                <h2 class="text-xl font-semibold text-gray-600">@LocalizationService["Security"]</h2>
-                <label class="text-gray-700">@LocalizationService["UseFingerprint"]</label>
-                <label class="switch">
-                    <input type="checkbox" @bind="UseFingerprint">
-                    <span class="slider round"></span>
-                </label>
-            </div>
+    <div class="settings-container">
 
-            <!-- Language -->
-            <br />
-            <h2 class="text-xl font-semibold text-gray-600">@LocalizationService["Language"]</h2>
-            <div class="validation-frame">
-                <i class="fas fa-language text-xl text-gray-600"></i>
-                <select class="settings-picker" @onchange="OnLanguageChanged">
-                    @foreach (var language in LanguageList)
-                    {
-                        <option value="@language.LanguageCode" selected="@(AppState.SelectedLanguageCode == language.LanguageCode ? "selected" : null)">
-                            @LanguageStateService.GetFlagEmoji(language.LanguageCode) @language.LanguageName
-                        </option>
-                    }
-                </select>
-            </div>
-
-            <!-- Input Options -->
-            <br />
-            <h2 class="text-xl font-semibold text-gray-600">@LocalizationService["InputOptions"]</h2>
-            <div class="validation-frame">
-                <i class="fas fa-filter text-xl text-gray-600"></i>
-                <select class="settings-picker" @onchange="OnInputOptionChanged">
-                    @foreach (var input in InputOptionList)
-                    {
-                        <option value="@input.InputOptionCode" selected="@(AppState.SelectedInputOptionCode == input.InputOptionCode ? "selected" : null)">
-                            @input.InputOptionName
-                        </option>
-                    }
-                </select>
-            </div>
-
-            <!-- Application Reset -->
-            <br />
-            <h2 class="text-xl font-semibold text-gray-600">@LocalizationService["Application"]</h2>
-            <div class="validation-frame">
-                <button @onclick="ResetApplication" class="btn btn-outline-danger w-100" type="submit">@LocalizationService["ResetApplication"]</button>
-            </div>
-
-            <!-- App Info -->
-            <div class="settings-frame space-y-3">
-                <div class="text-xs text-gray-500 mt-2">
-                    <button class="btn-link" @onclick="Home">@LocalizationService["HomePage"]</button>
+        <!-- ── Security ──────────────────────────────────────────────────────── -->
+        @if (ShowFingerPrintOption)
+        {
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <i class="bi bi-shield-lock card-icon"></i>
+                    <span>@LocalizationService["Security"]</span>
                 </div>
-                <div class="text-xs text-gray-500 mt-2">
-                    <button class="btn-link" @onclick="Feedback">@LocalizationService["Feedback"]</button>
+
+                <div class="toggle-row">
+                    <div class="toggle-label-group">
+                        <i class="bi bi-fingerprint toggle-icon"></i>
+                        <span class="toggle-label">@LocalizationService["UseFingerprint"]</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" @bind="UseFingerprint" />
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
+        }
 
-            <!-- Logout Button -->
-            <div class="logout-wrapper">
-                <button class="btn btn-outline-primary w-100" @onclick="Logout">@LocalizationService["Logout"]</button>
+        <!-- ── Language ──────────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="bi bi-translate card-icon"></i>
+                <span>@LocalizationService["Language"]</span>
             </div>
+            <select class="settings-select" @onchange="OnLanguageChanged">
+                @foreach (var language in LanguageList)
+                {
+                    <option value="@language.LanguageCode"
+                            selected="@(AppState.SelectedLanguageCode == language.LanguageCode ? "selected" : null)">
+                        @LanguageStateService.GetFlagEmoji(language.LanguageCode) @language.LanguageName
+                    </option>
+                }
+            </select>
         </div>
 
-        @if (showConfirmResetApplicationDialog)
-        {
-            <div class="modal-overlay">
-                <div class="modal-window">
-                    <h2 class="modal-title">@LocalizationService["ConfirmPrompt"]</h2>
-                    <p class="modal-message">@LocalizationService["ResetMessage"]</p>
-                    <div class="modal-actions">
-                        <button class="btn btn-outline-secondary" @onclick="() => ConfirmResetApplication(false)">@LocalizationService["Cancel"]</button>
-                        <button class="btn btn-outline-success" @onclick="() => ConfirmResetApplication(true)">@LocalizationService["OK"]</button>
-                    </div>
-                </div>
+        <!-- ── Input Options ─────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="bi bi-keyboard card-icon"></i>
+                <span>@LocalizationService["InputOptions"]</span>
             </div>
-        }
+            @if (ShowNfcOption)
+            { 
+                <div class="toggle-row">
+                    <div class="toggle-label-group">
+                        <i class="bi bi-wifi toggle-icon"></i>
+                        <span class="toggle-label">@LocalizationService["UseNfc"]</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" @bind="UseNfc" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="row-divider"></div>
+            }
+            <select class="settings-select" @onchange="OnInputOptionChanged">
+                @foreach (var input in InputOptionList)
+                {
+                    <option value="@input.InputOptionCode"
+                            selected="@(AppState.SelectedInputOptionCode == input.InputOptionCode ? "selected" : null)">
+                        @input.InputOptionName
+                    </option>
+                }
+            </select>
+        </div>
 
-        @if (showConfirmLogoutDialog)
-        {
-            <div class="modal-overlay">
-                <div class="modal-window">
-                    <h2 class="modal-title">@LocalizationService["ConfirmPrompt"]</h2>
-                    <p class="modal-message">@LocalizationService["LogoutMessage"]</p>
-                    <div class="modal-actions">
-                        <button class="btn btn-outline-secondary" @onclick="() => ConfirmLogout(false)">@LocalizationService["Cancel"]</button>
-                        <button class="btn btn-outline-success" @onclick="() => ConfirmLogout(true)">@LocalizationService["OK"]</button>
-                    </div>
+        <!-- ── Application ───────────────────────────────────────────────────── -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="bi bi-grid card-icon"></i>
+                <span>@LocalizationService["Application"]</span>
+            </div>
+
+            <button class="btn-link-row" @onclick="Home">
+                <i class="bi bi-house btn-link-icon"></i>
+                <span>@LocalizationService["HomePage"]</span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
+            </button>
+
+            <div class="row-divider"></div>
+
+            <button class="btn-link-row" @onclick="Feedback">
+                <i class="bi bi-chat-dots btn-link-icon"></i>
+                <span>@LocalizationService["Feedback"]</span>
+                <i class="bi bi-chevron-right btn-link-chevron"></i>
+            </button>
+
+            <div class="row-divider"></div>
+
+            <button class="btn-danger-row" @onclick="ResetApplication">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <span>@LocalizationService["ResetApplication"]</span>
+            </button>
+        </div>
+
+        <!-- ── Logout ─────────────────────────────────────────────────────────── -->
+        <div class="logout-wrapper">
+            <button class="btn-logout" @onclick="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+                @LocalizationService["Logout"]
+            </button>
+        </div>
+
+        <!-- ── Version ───────────────────────────────────────────────────────── -->
+        <div class="footer-text">@LocalizationService["AppVersion"]: @AppVersion</div>
+
+    </div>
+
+    <!-- ── Confirm Reset Dialog ───────────────────────────────────────────── -->
+    @if (showConfirmResetApplicationDialog)
+    {
+        <div class="modal-overlay">
+            <div class="modal-window">
+                <h2 class="modal-title">@LocalizationService["ConfirmPrompt"]</h2>
+                <p class="modal-message">@LocalizationService["ResetMessage"]</p>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-cancel" @onclick="() => ConfirmResetApplication(false)">@LocalizationService["Cancel"]</button>
+                    <button class="modal-btn modal-btn-confirm" @onclick="() => ConfirmResetApplication(true)">@LocalizationService["OK"]</button>
                 </div>
             </div>
-        }
-    </div>
-    <!-- Footer -->
-    <div class="footer-text mt-auto">
-        @LocalizationService["AppVersion"]: @AppVersion
-    </div>
+        </div>
+    }
+
+    <!-- ── Confirm Logout Dialog ──────────────────────────────────────────── -->
+    @if (showConfirmLogoutDialog)
+    {
+        <div class="modal-overlay">
+            <div class="modal-window">
+                <h2 class="modal-title">@LocalizationService["ConfirmPrompt"]</h2>
+                <p class="modal-message">@LocalizationService["LogoutMessage"]</p>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-cancel" @onclick="() => ConfirmLogout(false)">@LocalizationService["Cancel"]</button>
+                    <button class="modal-btn modal-btn-confirm" @onclick="() => ConfirmLogout(true)">@LocalizationService["OK"]</button>
+                </div>
+            </div>
+        </div>
+    }
+
 </AuthWrapper>

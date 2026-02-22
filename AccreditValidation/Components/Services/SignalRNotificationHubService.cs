@@ -24,9 +24,6 @@ namespace AccreditValidation.Components.Services
             _hubUrl = hubUrl;
         }
 
-        /// <summary>
-        /// Initialize and start the SignalR connection
-        /// </summary>
         public async Task InitializeAsync()
         {
             if (_isDisposed)
@@ -99,9 +96,6 @@ namespace AccreditValidation.Components.Services
             }
         }
 
-        /// <summary>
-        /// Start the SignalR connection with retry logic
-        /// </summary>
         private async Task StartConnectionAsync(CancellationToken cancellationToken = default)
         {
             if (_hubConnection == null)
@@ -168,21 +162,15 @@ namespace AccreditValidation.Components.Services
             }
         }
 
-        /// <summary>
-        /// Register SignalR event handlers
-        /// </summary>
         private void RegisterHandlers()
         {
             if (_hubConnection == null)
+            {
                 return;
-
-            Debug.WriteLine("📡 Registering SignalR handlers...");
-
-            // CORRECT: Handle the object sent by the server
+            }
+ 
             _hubConnection.On<NotificationDto>("ReceiveNotification", (notification) =>
             {
-                Debug.WriteLine($"📬 [ReceiveNotification] {notification.Title} - {notification.Message} (Type: {notification.Type})");
-                
                 // Parse the type string to NotificationType enum
                 NotificationType notifType = NotificationType.Info;
                 if (Enum.TryParse<NotificationType>(notification.Type, true, out var parsedType))
@@ -192,13 +180,8 @@ namespace AccreditValidation.Components.Services
                 
                 OnNotificationReceived?.Invoke(this, (notification.Title, notification.Message, notifType));
             });
-
-            Debug.WriteLine("✅ Handler registered successfully!");
         }
 
-        /// <summary>
-        /// Stop the SignalR connection
-        /// </summary>
         public async Task StopAsync()
         {
             // Cancel any ongoing connection attempts
@@ -220,9 +203,6 @@ namespace AccreditValidation.Components.Services
             }
         }
 
-        /// <summary>
-        /// Manually reconnect to the hub
-        /// </summary>
         public async Task ReconnectAsync()
         {
             Debug.WriteLine("Attempting manual reconnection...");
@@ -241,7 +221,6 @@ namespace AccreditValidation.Components.Services
         {
             _isConnected = false;
             OnConnectionStateChanged?.Invoke(this, false);
-            Debug.WriteLine($"🔄 SignalR reconnecting... {exception?.Message}");
             return Task.CompletedTask;
         }
 
@@ -249,7 +228,6 @@ namespace AccreditValidation.Components.Services
         {
             _isConnected = true;
             OnConnectionStateChanged?.Invoke(this, true);
-            Debug.WriteLine($"✅ SignalR reconnected with ID: {connectionId}");
             return Task.CompletedTask;
         }
 
@@ -257,7 +235,6 @@ namespace AccreditValidation.Components.Services
         {
             _isConnected = false;
             OnConnectionStateChanged?.Invoke(this, false);
-            Debug.WriteLine($"❌ SignalR connection closed: {exception?.Message}");
             return Task.CompletedTask;
         }
 

@@ -1,74 +1,475 @@
-﻿/* ====== Card Layout ====== */
-.card {
+﻿/* ── Box-sizing ──────────────────────────────────────────────────────────── */
+.settings-container *,
+.settings-container *::before,
+.settings-container *::after {
+    box-sizing: border-box;
+}
+
+/* ── Container ──────────────────────────────────────────────────────────── */
+.settings-container {
+    max-width: 480px;
     width: 100%;
-    max-width: 400px;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 24px;
-}
-
-/* Info row inside the card */
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 16px;
-    color: #333333;
-}
-
-/* ====== Button Styles ====== */
-.button-group {
+    margin: 0 auto;
+    padding: 0.75rem 0.75rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 400px;
+    gap: 0.625rem;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* ====== Network status dot and text ====== */
-.network-status-row {
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.settings-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* ── Card header ─────────────────────────────────────────────────────────── */
+.settings-card-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.65rem 1rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.card-icon {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+/* ── Row divider ─────────────────────────────────────────────────────────── */
+.row-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 0 1rem;
+}
+
+/* ── Info rows ───────────────────────────────────────────────────────────── */
+.info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1rem;
+}
+
+.info-label {
+    font-size: 0.9375rem;
+    color: #374151;
+}
+
+.info-value {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.info-value--muted {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* ── Network status ──────────────────────────────────────────────────────── */
+.network-status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .status-dot {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    display: inline-block;
+    flex-shrink: 0;
 }
 
-.status-online {
-    background-color: #22c55e; /* green */
+.status-dot--online {
+    background-color: #22c55e;
 }
 
-.status-offline {
-    background-color: #ef4444; /* red */
+.status-dot--offline {
+    background-color: #ef4444;
 }
 
 .status-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-label--online {
+    color: #15803d;
+}
+
+.status-label--offline {
+    color: #b91c1c;
+}
+
+/* ── Link rows ───────────────────────────────────────────────────────────── */
+.btn-link-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: #2563eb;
+    text-align: left;
+    transition: background-color 0.15s;
+}
+
+    .btn-link-row:hover,
+    .btn-link-row:active {
+        background-color: #f0f4ff;
+    }
+
+.btn-link-icon {
+    font-size: 1rem;
+    color: #6b7280;
+}
+
+.btn-link-chevron {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: #d1d5db;
+}
+
+/* ── Danger row ──────────────────────────────────────────────────────────── */
+.btn-danger-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: #dc2626;
     font-weight: 500;
+    text-align: left;
+    transition: background-color 0.15s;
 }
 
-.label-online {
-    color: #15803d; /* dark green */
+    .btn-danger-row:hover,
+    .btn-danger-row:active {
+        background-color: #fff1f1;
+    }
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
-.label-offline {
-    color: #b91c1c; /* dark red */
+.modal-window {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: min(320px, 90vw);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
+.modal-window--wide {
+    width: min(420px, 94vw);
+}
+
+.modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.5rem;
+}
+
+.modal-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1.25rem;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #111827;
+    background: #f9fafb;
+    outline: none;
+    box-sizing: border-box;
+}
+
+    .modal-input:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+    }
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+    .modal-btn:hover {
+        opacity: 0.85;
+    }
+
+.modal-btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-btn-confirm {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.modal-btn-danger {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ── Download option buttons ─────────────────────────────────────────────── */
+.modal-option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.modal-option-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #2563eb;
+    border-radius: 10px;
+    background: transparent;
+    color: #2563eb;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    text-align: left;
+}
+
+    .modal-option-btn:hover {
+        background-color: #eff6ff;
+    }
+
+/* ── Offline records ─────────────────────────────────────────────────────── */
+.offline-filters {
+    margin-bottom: 0.75rem;
+}
+
+.offline-records-list {
+    max-height: calc(60vh - 100px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.offline-record {
+    border-radius: 10px;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+}
+
+.offline-record--success {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.offline-record--danger {
+    background-color: #fff1f2;
+    border-color: #fecdd3;
+}
+
+.offline-record-row {
+    font-size: 0.8125rem;
+    color: #374151;
+    margin-bottom: 0.2rem;
+}
+
+.offline-empty {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+/* ── Alert toast ─────────────────────────────────────────────────────────── */
+.alert-toast {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 2000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    min-width: 240px;
+    max-width: 90vw;
+}
+
+.alert-toast--success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+.alert-toast--danger {
+    background: #fef2f2;
+    border: 1px solid #fecdd3;
+    color: #b91c1c;
+}
+
+.alert-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: inherit;
+    opacity: 0.7;
+    margin-left: auto;
+    padding: 0;
+    line-height: 1;
+}
+
+    .alert-close:hover {
+        opacity: 1;
+    }
+
+/* ── Background state classes ────────────────────────────────────────────── */
 .bg-custom-danger {
-    background-color: #F8D7DA;
+    background-color: #FFF1F2;
 }
 
 .bg-custom-success {
-    background-color: #D4EDDA;
+    background-color: #F0FDF4;
 }
 
 .bg-white {
     background-color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HONEYWELL — CT40 / CT45 portrait WebView.
+   Usable height ≈ 528px (640px − 56px top bar − 56px tab bar).
+
+   Element budget at base styles:
+     container padding top+bottom  : 0.75 + 1rem      ≈  28px
+     gap × 1                       : 0.625rem          ≈  10px
+     stats card (4 rows + 3 divs)  : 4×45 + 3         ≈ 183px
+     actions card (5 rows + 4 divs): 5×49 + 4         ≈ 249px
+                                              TOTAL    ≈ 470px  ✓
+
+   Passes at base. Breakpoints below guard against larger system fonts,
+   extra WebView chrome, and right-to-left/long translated strings.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-height: 680px), (max-width: 400px) {
+
+    .settings-container {
+        padding: 0.4rem 0.625rem 0.5rem;
+        gap: 0.375rem;
+    }
+
+    /* Stats rows */
+    .info-row {
+        padding: 0.55rem 0.875rem;
+    }
+
+    .info-label,
+    .info-value {
+        font-size: 0.875rem;
+    }
+
+    .info-value--muted {
+        font-size: 0.8125rem;
+    }
+
+    .status-label {
+        font-size: 0.8125rem;
+    }
+
+    /* Action rows */
+    .btn-link-row,
+    .btn-danger-row {
+        padding: 0.55rem 0.875rem;
+        font-size: 0.875rem;
+        gap: 0.625rem;
+    }
+
+    .row-divider {
+        margin: 0 0.875rem;
+    }
+}
+
+/* ── Extra-compact: very small screens or unusual DPI ───────────────────── */
+@media (max-height: 580px), (max-width: 360px) {
+
+    .settings-container {
+        padding: 0.3rem 0.5rem 0.3rem;
+        gap: 0.3rem;
+    }
+
+    .info-row {
+        padding: 0.45rem 0.75rem;
+    }
+
+    .info-label,
+    .info-value {
+        font-size: 0.8125rem;
+    }
+
+    .info-value--muted,
+    .status-label {
+        font-size: 0.75rem;
+    }
+
+    .btn-link-row,
+    .btn-danger-row {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+    }
+
+    .row-divider {
+        margin: 0 0.75rem;
+    }
 }
