@@ -1,0 +1,24 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!--
+        Declares the NFC technologies this app can read.
+        IsoDep   — ISO 14443-4; covers HCE-based tags such as Google Wallet
+                   event passes that emulate a smart card.
+        NfcA / NfcB — ISO 14443-3 lower layers (required alongside IsoDep).
+        Ndef        — Standard NDEF tags (wristbands, stickers, etc.).
+        NdefFormatable — Blank tags that can be formatted.
+    -->
+    <tech-list>
+        <tech>android.nfc.tech.IsoDep</tech>
+        <tech>android.nfc.tech.NfcA</tech>
+    </tech-list>
+    <tech-list>
+        <tech>android.nfc.tech.IsoDep</tech>
+        <tech>android.nfc.tech.NfcB</tech>
+    </tech-list>
+    <tech-list>
+        <tech>android.nfc.tech.Ndef</tech>
+    </tech-list>
+    <tech-list>
+        <tech>android.nfc.tech.NdefFormatable</tech>
+    </tech-list>
+</resources>

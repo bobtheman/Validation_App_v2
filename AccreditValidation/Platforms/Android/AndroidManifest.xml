@@ -27,6 +27,25 @@
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
+
+			<!-- Standard NDEF tags (wristbands, stickers) -->
+			<intent-filter>
+				<action android:name="android.nfc.action.NDEF_DISCOVERED" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+
+			<!--
+				HCE / smart-card tags, including Google Wallet event passes.
+				ACTION_TECH_DISCOVERED fires when the tag technology matches
+				one of the entries in nfc_tech_filter.xml (IsoDep + Ndef).
+			-->
+			<intent-filter>
+				<action android:name="android.nfc.action.TECH_DISCOVERED" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+			<meta-data
+				android:name="android.nfc.action.TECH_DISCOVERED"
+				android:resource="@xml/nfc_tech_filter" />
 		</activity>
 	</application>
 </manifest>

@@ -10,7 +10,6 @@
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        // ── Cached options — avoids re-allocating JsonSerializerOptions on every login
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true

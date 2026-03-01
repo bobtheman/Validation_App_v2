@@ -49,9 +49,17 @@
     <!-- NFC Permission -->
     <key>NFCReaderUsageDescription</key>
     <string>This app uses NFC to scan badge tags for validation.</string>
-    <key>com.apple.developer.nfc.readersession.formats</key>
+
+    <!--
+        ISO 7816 Application Identifiers the OS should wake this app for.
+        The capability entitlements (NDEF + TAG formats) live in Entitlements.plist.
+        Google Smart Tap 2.x event passes use A0000004763C0000.
+    -->
+    <key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
     <array>
-      <string>NDEF</string>
+      <string>A0000004763C0000</string>
+      <string>A000000476CF0100</string>
+      <string>D2760000850101</string>
     </array>
 
     <!-- Orientation Support -->

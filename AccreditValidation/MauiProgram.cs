@@ -68,7 +68,7 @@
             builder.Services.AddSingleton<IDevicePlaformHelper, DevicePlaformHelper>();
             builder.Services.AddSingleton<IScannerCodeHelper, ScannerCodeHelper>();
             builder.Services.AddSingleton<IFileService, FileService>();
-            builder.Services.AddSingleton<INfcService, NfcService>();
+            builder.Services.AddNfcService();
 
             // Notification Service - UPDATED for SignalR support
             builder.Services.AddSingleton<INotificationService, NotificationService>();
@@ -78,13 +78,6 @@
 
             // Audio Service
             builder.Services.AddSingleton(AudioManager.Current);
-
-            // Optional: Uncomment if needed
-            // builder.Services.AddSingleton<IFileService, FileService>();
-            // builder.Services.AddSingleton<IConnectivityChecker, ConnectivityChecker>();
-            // builder.Services.AddSingleton<IOfflineDataService, OfflineDataService>();
-            // builder.Services.AddSingleton<IRestDataService, RestDataService>();
-            // builder.Services.AddSingleton<ILanguageHelper, LanguageHelper>();
 
             // Disable safe area insets (iOS only)
             Microsoft.Maui.Handlers.PageHandler.Mapper.AppendToMapping("NoSafeArea", (handler, view) =>

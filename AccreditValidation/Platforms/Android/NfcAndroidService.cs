@@ -1,4 +1,4 @@
-﻿namespace AccreditValidation.Components.Services;
+namespace AccreditValidation.Platforms.Android;
 
 using global::AccreditValidation.Components.Services.Interface;
 using Plugin.NFC;
@@ -6,24 +6,19 @@ using System;
 using System.Linq;
 using System.Text;
 
-public class NfcService : INfcService
+public class NfcAndroidService : INfcService
 {
-    // ── Public surface ────────────────────────────────────────────────────
-
     public bool IsAvailable => CrossNFC.IsSupported;
     public bool IsEnabled => CrossNFC.Current.IsEnabled;
 
     public event EventHandler<string>? TagRead;
     public event EventHandler<string>? TagError;
 
-    // ── Listening ─────────────────────────────────────────────────────────
-
     public void StartListening()
     {
         if (!IsAvailable || !IsEnabled)
             return;
 
-        // Guard against double-subscription
         CrossNFC.Current.OnMessageReceived -= OnMessageReceived;
         CrossNFC.Current.OnNfcStatusChanged -= OnNfcStatusChanged;
 
@@ -41,30 +36,42 @@ public class NfcService : INfcService
         CrossNFC.Current.OnMessageReceived -= OnMessageReceived;
         CrossNFC.Current.OnNfcStatusChanged -= OnNfcStatusChanged;
 
-        CrossNFC.Current.StopListening();
+        try
+        {
+            CrossNFC.Current.StopListening();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[NfcAndroidService] StopListening error (activity may have paused): {ex.Message}");
+        }
     }
-
-    // ── Private handlers ──────────────────────────────────────────────────
 
     private void OnMessageReceived(ITagInfo tagInfo)
     {
-        if (tagInfo == null || tagInfo.IsEmpty)
+        if (tagInfo == null)
         {
-            TagError?.Invoke(this, "NFC tag was empty or unreadable.");
+            TagError?.Invoke(this, "NFC tag was unreadable.");
             return;
         }
 
-        foreach (var record in tagInfo.Records ?? Array.Empty<NFCNdefRecord>())
+        // NDEF path — classic stickers, wristbands.
+        // IsEmpty/IsSupported are false for HCE tags (Google Wallet) so only
+        // attempt this when records are actually present.
+        if (!tagInfo.IsEmpty && tagInfo.Records != null)
         {
-            var payload = ExtractText(record);
-            if (!string.IsNullOrWhiteSpace(payload))
+            foreach (var record in tagInfo.Records)
             {
-                TagRead?.Invoke(this, payload.Trim());
-                return;
+                var payload = ExtractText(record);
+                if (!string.IsNullOrWhiteSpace(payload))
+                {
+                    TagRead?.Invoke(this, payload.Trim());
+                    return;
+                }
             }
         }
 
-        // Fallback: use raw tag UID as the barcode value
+        // UID path — Google Wallet event passes use HCE / ISO-DEP and have no
+        // NDEF records, but the tag identifier is always populated.
         var uid = tagInfo.Identifier;
         if (uid != null && uid.Length > 0)
         {
@@ -81,10 +88,8 @@ public class NfcService : INfcService
         if (!isEnabled)
         {
             TagError?.Invoke(this, "NFC was disabled on the device.");
-        }  
+        }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────
 
     private static string ExtractText(NFCNdefRecord record)
     {
@@ -93,8 +98,7 @@ public class NfcService : INfcService
 
         try
         {
-            if (record.TypeFormat == NFCNdefTypeFormat.WellKnown &&
-                record.Payload.Length > 1)
+            if (record.TypeFormat == NFCNdefTypeFormat.WellKnown && record.Payload.Length > 1)
             {
                 var statusByte = record.Payload[0];
                 var langCodeLen = statusByte & 0x3F;
@@ -110,7 +114,6 @@ public class NfcService : INfcService
                 }
             }
 
-            // Fallback: interpret whole payload as UTF-8
             return Encoding.UTF8.GetString(record.Payload);
         }
         catch

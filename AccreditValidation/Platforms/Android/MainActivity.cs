@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Nfc;
 using Android.OS;
 using Android.Views;
 using Plugin.NFC;
@@ -41,6 +42,14 @@ namespace AccreditValidation
         {
             base.OnResume();
             CrossNFC.OnResume();        // ← starts foreground dispatch for NFC
+        }
+
+        protected override void OnPause()
+        {
+            // Disable foreground dispatch before yielding activity — prevents
+            // IllegalStateException: "must disable foreground dispatching while still resumed"
+            NfcAdapter.GetDefaultAdapter(this)?.DisableForegroundDispatch(this);
+            base.OnPause();
         }
 
         protected override void OnNewIntent(Intent intent)

@@ -159,6 +159,10 @@ namespace AccreditValidation.Components.Pages
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
+                // Show spinner immediately before the async validation begins
+                AppState.ShowSpinner = true;
+                StateHasChanged();
+
                 await ValidateEntry(payload);
 
                 // Resume listening automatically after each successful read
@@ -179,6 +183,10 @@ namespace AccreditValidation.Components.Pages
                     var intent = new Android.Content.Intent(
                         Android.Provider.Settings.ActionNfcSettings);
                     Android.App.Application.Context.StartActivity(intent);
+#elif IOS
+                    // iOS has no NFC on/off toggle — NFC hardware unavailable means
+                    // the device doesn't support it. Open general Settings instead.
+                    await Launcher.OpenAsync("app-settings:");
 #endif
                 }
                 else

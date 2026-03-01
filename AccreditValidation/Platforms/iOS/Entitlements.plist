@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+
+    <!--
+        NFC reader session formats.
+        NDEF  — standard NFC stickers / wristbands.
+        TAG   — ISO 7816 / ISO-DEP smart-card emulation, required for
+                Google Wallet event passes and Apple Wallet passes on iOS 13+.
+        This key MUST live in Entitlements.plist; it is silently ignored
+        if placed in Info.plist.
+    -->
+    <key>com.apple.developer.nfc.readersession.formats</key>
+    <array>
+      <string>NDEF</string>
+      <string>TAG</string>
+    </array>
+
+    <!--
+        ISO 7816 Application Identifiers (AIDs) this app may select.
+        Required when TAG format is enabled.
+
+        Google Smart Tap 2.x (event passes, loyalty, etc.)
+          A0000004763C0000  — Google LLC Smart Tap Data
+          A000000476CF0100  — Google Wallet generic
+
+        D2760000850101     — Google Pay / Wallet secondary AID
+    -->
+    <key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+    <array>
+      <string>A0000004763C0000</string>
+      <string>A000000476CF0100</string>
+      <string>D2760000850101</string>
+    </array>
+
+  </dict>
+</plist>
